@@ -16,6 +16,7 @@ import { CalendarIcon, HomeIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import DashboardUserButton from "./dashboard-user-button";
 
 const firstSection = [
   {
@@ -70,7 +71,9 @@ export default function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter></SidebarFooter>
+      <SidebarFooter>
+        <DashboardUserButton />
+      </SidebarFooter>
     </Sidebar>
   );
 }
