@@ -20,6 +20,7 @@ export function RegisterForm() {
           email: values.email,
           password: values.password,
           name: values.name,
+          image: `https://api.dicebear.com/9.x/initials/svg?seed=${values.name}`,
         }),
       );
 

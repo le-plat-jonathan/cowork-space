@@ -67,6 +67,12 @@ export function LoginForm() {
           <field.Field>
             <div className="flex items-center justify-between">
               <field.Label>Mot de passe</field.Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-slate-500 hover:text-slate-700 underline-offset-4 hover:underline"
+              >
+                Mot de passe oublié ?
+              </Link>
             </div>
             <field.Content>
               <field.Input type="password" placeholder="*******" />
