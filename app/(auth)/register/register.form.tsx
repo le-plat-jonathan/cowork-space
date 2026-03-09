@@ -8,17 +8,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RegisterFormSchema, RegisterFormType } from "./register.schema";
 
-type RegisterFormProps = {
-  subdomain?: string | null;
-  callbackUrl?: string;
-};
-
-export function RegisterForm({ subdomain, callbackUrl }: RegisterFormProps) {
+export function RegisterForm() {
   const router = useRouter();
 
   const submitMutation = useMutation({
     mutationFn: async (values: RegisterFormType) => {
-      const result = await unwrapSafePromise(
+      await unwrapSafePromise(
         authClient.signUp.email({
           email: values.email,
           password: values.password,
