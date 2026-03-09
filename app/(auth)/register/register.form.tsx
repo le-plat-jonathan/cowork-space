@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@/components/ui/typography";
 import { Form, useForm } from "@/features/form/tanstack-form";
 import { authClient } from "@/lib/auth-client";
 import { unwrapSafePromise } from "@/lib/promises";
@@ -45,6 +46,12 @@ export function RegisterForm() {
 
   return (
     <Form form={form} className="flex flex-col gap-4 p-6 md:p-8">
+      <div>
+        <Typography variant="h2">Créer un compte</Typography>
+        <Typography variant="p" className="text-muted-foreground">
+          Créez un compte pour accéder à votre espace personnel.
+        </Typography>
+      </div>
       <form.AppField name="name">
         {(field) => (
           <field.Field>
