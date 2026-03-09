@@ -1,0 +1,13 @@
+{
+  "Next page": {
+    "prefix": "npag",
+    "description": "Create the base of a next page",
+    "scope": "typescriptreact",
+    "body": [
+      "",
+      "export default async function RoutePage() {",
+      "  return $2",
+      "}",
+    ],
+  },
+}
