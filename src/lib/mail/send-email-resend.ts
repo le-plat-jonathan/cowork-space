@@ -16,7 +16,6 @@ export const sendEmail = async (
     params[0].subject = `[DEV] ${params[0].subject}`;
   }
 
-  // Avoid sending emails to playwright-test emails
   if (
     Array.isArray(params[0].to)
       ? params[0].to.some((to) => to.startsWith("playwright-test-"))
