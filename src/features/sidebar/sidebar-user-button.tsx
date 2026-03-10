@@ -26,7 +26,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "sonner";
 
-export default function DashboardUserButton() {
+export default function SidebarUserButton() {
   const { data } = authClient.useSession();
 
   const theme = useTheme();
@@ -76,7 +76,7 @@ export default function DashboardUserButton() {
             className="cursor-pointer flex items-center justify-between"
             asChild
           >
-            <Link href="/app/admin">
+            <Link href="/admin">
               <span>Admin</span>
               <ShieldIcon className="size-4 shrink-0" />
             </Link>

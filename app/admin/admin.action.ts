@@ -1,21 +1,10 @@
 "use server";
 
+import { getRequiredAdmin } from "@/lib/auth/auth-user";
 import prisma from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-
-async function requireAdmin() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session || session.user.role !== "admin") {
-    throw new Error("Unauthorized");
-  }
-  return session;
-}
 
 export async function getRecentAccounts() {
-  await requireAdmin();
+  await getRequiredAdmin();
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -43,7 +32,7 @@ export async function listUsers(
   search: string = "",
   perPage: number = 20,
 ) {
-  await requireAdmin();
+  await getRequiredAdmin();
 
   const where = search
     ? {
