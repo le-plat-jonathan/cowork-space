@@ -1,7 +1,7 @@
 "use client";
 
 import { Form, useForm } from "@/features/form/tanstack-form";
-import { authClient } from "@/lib/auth/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { unwrapSafePromise } from "@/lib/promises";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -45,7 +45,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   });
 
   return (
-    <Form form={form} className="flex flex-col gap-4">
+    <Form form={form} className="flex flex-col gap-4 p-6 md:p-8">
       <form.AppField name="password">
         {(field) => (
           <field.Field>

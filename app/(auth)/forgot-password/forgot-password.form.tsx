@@ -46,7 +46,7 @@ export function ForgotPasswordForm() {
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center gap-3 py-4 text-center">
+      <div className="flex flex-col items-center gap-3 p-6 md:p-8text-center">
         <CheckCircle className="size-10 text-green-500" />
         <p className="text-sm font-medium text-[#0f2340]">Email envoyé !</p>
         <p className="text-xs text-slate-500">
