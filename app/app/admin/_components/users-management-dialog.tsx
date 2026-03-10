@@ -100,7 +100,7 @@ export function UsersManagementDialog() {
             Gerer les utilisateurs
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-5xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Gestion des utilisateurs</DialogTitle>
           </DialogHeader>
@@ -115,7 +115,7 @@ export function UsersManagementDialog() {
             />
           </div>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto min-h-[340px]">
             {isLoading ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
