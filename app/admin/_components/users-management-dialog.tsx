@@ -57,6 +57,20 @@ import {
   Trash2Icon,
   UsersIcon,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+const items = [
+  { label: "Utilisateur", value: "user" },
+  { label: "Admin", value: "admin" },
+]
 
 type User = Awaited<ReturnType<typeof listUsers>>["users"][number];
 
@@ -361,15 +375,22 @@ function EditUserDialog({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <option value="user">Utilisateur</option>
-              <option value="admin">Admin</option>
-            </select>
+            <label className="text-sm font-medium">Rôle</label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger className="w-full max-w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Rôle</SelectLabel>
+                  {items.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-2">
             <Button
