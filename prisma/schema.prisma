@@ -12,7 +12,10 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
+enum Role {
+  MEMBER
+  ADMIN
+}
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -20,14 +23,12 @@ model User {
   updatedAt     DateTime  @updatedAt
   name          String
   emailVerified Boolean   @default(false)
+  phone         String?
   image         String?
   sessions      Session[]
   accounts      Account[]
 
-  role       String?
-  banned     Boolean?  @default(false)
-  banReason  String?
-  banExpires DateTime?
+  role       Role     @default(MEMBER)
 
   @@map("user")
 }
@@ -83,88 +84,86 @@ model Verification {
 }
 
 enum ReservationStatus {
-  annulée
-  confirmée
-  en_attente
+  canceled
+  confirmed
+  waiting
 }
 
 model Reservation {
   id_reservation String   @id @default(cuid())
-  date_debut    DateTime
-  date_fin      DateTime
-  heure_debut   DateTime
-  heure_fin     DateTime
-  status        ReservationStatus @default(confirmée)
-  est_recurrente Boolean   @default(false)
-  est_privée   Boolean   @default(false)
-  motif String 
+  startTime DateTime
+  endTime   DateTime
+  status        ReservationStatus @default(confirmed)
+  is_recurrent Boolean   @default(false)
+  is_private   Boolean   @default(false)
+  reason String? 
   id_user String
-  id_espace String
-  @@index([id_user])
+  id_space String
+  @@index([id_user, startTime, endTime])
   @@map("reservation")
 }
 
-enum typeEspace {
+enum TypeSpace {
   open_space
-  salle_de_reunion
+  meeting_room
 }
-enum StatusEspace {
-  disponible
-  indisponible
+enum StatusSpace {
+  available
+  unavailable
 }
 
-model Espace {
+model Space {
   id_espace String @id @default(cuid())
   nom       String
-  type   typeEspace @default(open_space)
-  capacité Int
+  type   TypeSpace @default(open_space)
+  capacity Int
   description String
   plan String
   position_x Int
   position_y Int
-  status StatusEspace @default(disponible)
+  status StatusSpace @default(available)
   @@map("espace")
 }
 
 
 enum typeNotification {
   confirmation
-  annulation
-  rappel
+  cancellation
+  reminder
 }
 enum StatusNotification {
-  envoyée
-  en_attente
-  echec
+  send
+  is_waiting
+  failed
 }
 model Notification {
   id_notification String @id @default(cuid())
   type typeNotification 
-  date_envoi DateTime @default(now())
-  status StatusNotification @default(en_attente)
+  date_send DateTime @default(now())
+  status StatusNotification @default(is_waiting)
   id_reservation String
   id_user String
   @@index([id_user])
   @@map("notification")
 }
 
-model Equipement {
-  id_equipement String @id @default(cuid())
-  nom String
+model Equipment {
+  id_equipment String @id @default(cuid())
+  name String
   description String
-  @@map("equipement")
+  @@map("equipment")
 }
 
-enum TypeReccurence {
-  hebdomadaire
-  mensuelle
+enum TypeRecurrence {
+  weekly
+  monthly
 }
-model Reccurence {
-  id_reccurence String @id @default(cuid())
-  type_reccurence TypeReccurence
-  jour_semaine Int
-  date_fin_recurrence DateTime
+model Recurrence {
+  id_recurrence String @id @default(cuid())
+  type_recurrence TypeRecurrence
+  day_of_week Int
+  end_date_recurrence DateTime
   id_reservation_parent Int
   @@index([ id_reservation_parent])
-  @@map("reccurence")
+  @@map("recurrence")
 }
