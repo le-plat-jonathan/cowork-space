@@ -27,7 +27,7 @@ export const getRequiredUser = async () => {
     unauthorized();
   }
 
-  return user;
+  return user!;
 };
 
 export const getRequiredAdmin = async () => {

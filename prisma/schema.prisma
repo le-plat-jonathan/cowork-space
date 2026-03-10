@@ -13,8 +13,8 @@ datasource db {
   provider = "postgresql"
 }
 enum Role {
-  MEMBER
-  ADMIN
+  user
+  admin
 }
 model User {
   id            String    @id @default(cuid())
@@ -28,7 +28,10 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  role       Role     @default(MEMBER)
+  role       Role     @default(user)
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
   @@map("user")
 }
