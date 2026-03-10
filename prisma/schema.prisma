@@ -75,3 +75,90 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+enum ReservationStatus {
+  annulée
+  confirmée
+  en_attente
+}
+
+model Reservation {
+  id_reservation String   @id @default(cuid())
+  date_debut    DateTime
+  date_fin      DateTime
+  heure_debut   DateTime
+  heure_fin     DateTime
+  status        ReservationStatus @default(confirmée)
+  est_recurrente Boolean   @default(false)
+  est_privée   Boolean   @default(false)
+  motif String 
+  id_user String
+  id_espace String
+  @@index([id_user])
+  @@map("reservation")
+}
+
+enum typeEspace {
+  open_space
+  salle_de_reunion
+}
+enum StatusEspace {
+  disponible
+  indisponible
+}
+
+model Espace {
+  id_espace String @id @default(cuid())
+  nom       String
+  type   typeEspace @default(open_space)
+  capacité Int
+  description String
+  plan String
+  position_x Int
+  position_y Int
+  status StatusEspace @default(disponible)
+  @@map("espace")
+}
+
+
+enum typeNotification {
+  confirmation
+  annulation
+  rappel
+}
+enum StatusNotification {
+  envoyée
+  en_attente
+  echec
+}
+model Notification {
+  id_notification String @id @default(cuid())
+  type typeNotification 
+  date_envoi DateTime @default(now())
+  status StatusNotification @default(en_attente)
+  id_reservation String
+  id_user String
+  @@index([id_user])
+  @@map("notification")
+}
+
+model Equipement {
+  id_equipement String @id @default(cuid())
+  nom String
+  description String
+  @@map("equipement")
+}
+
+enum TypeReccurence {
+  hebdomadaire
+  mensuelle
+}
+model Reccurence {
+  id_reccurence String @id @default(cuid())
+  type_reccurence TypeReccurence
+  jour_semaine Int
+  date_fin_recurrence DateTime
+  id_reservation_parent Int
+  @@index([ id_reservation_parent])
+  @@map("reccurence")
+}
