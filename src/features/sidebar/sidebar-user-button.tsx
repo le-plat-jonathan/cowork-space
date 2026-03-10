@@ -19,12 +19,14 @@ import {
   LogOutIcon,
   Monitor,
   Moon,
+  ShieldIcon,
   SunMedium,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { toast } from "sonner";
 
-export default function DashboardUserButton() {
+export default function SidebarUserButton() {
   const { data } = authClient.useSession();
 
   const theme = useTheme();
@@ -69,6 +71,17 @@ export default function DashboardUserButton() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {data?.user.role === "admin" && (
+          <DropdownMenuItem
+            className="cursor-pointer flex items-center justify-between"
+            asChild
+          >
+            <Link href="/admin">
+              <span>Admin</span>
+              <ShieldIcon className="size-4 shrink-0" />
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           className="cursor-pointer flex items-center justify-between"
           onClick={() => onLogout.mutate()}

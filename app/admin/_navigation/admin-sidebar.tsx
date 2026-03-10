@@ -14,7 +14,7 @@ import {
 import SidebarUserButton from "@/features/sidebar/sidebar-user-button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, HomeIcon } from "lucide-react";
+import { HomeIcon, UsersIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,15 +24,15 @@ const firstSection = [
   {
     icon: HomeIcon,
     label: "Accueil",
-    href: "/app",
+    href: "/admin",
   },
   {
-    icon: CalendarIcon,
-    label: "Reservations",
-    href: "/app/bookings",
+    icon: UsersIcon,
+    label: "Utilisateurs",
+    href: "/admin/users",
   },
 ];
-export default function DashboardSidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
   const isAdmin = session?.user.role === "admin";
@@ -41,7 +41,10 @@ export default function DashboardSidebar() {
       <SidebarHeader className="text-sidebar-accent-foreground">
         <Link href="/" className="flex items-center gap-2 px-2 pt-2">
           <Image src="/logo.svg" alt="Logo" width={36} height={36} />
-          <p className="text-2xl font-semibold">Cowork</p>
+          <div>
+            <p className="text-2xl font-semibold">Cowork</p>
+            <span className="text-xs font-medium tracking-tight">admin</span>
+          </div>
         </Link>
       </SidebarHeader>
       <div className="px-4 py-2">
