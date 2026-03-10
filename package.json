@@ -6,12 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "email:dev": "email dev"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "@react-email/components": "^1.0.8",
+    "@react-email/tailwind": "^2.0.5",
     "@tanstack/react-form": "^1.28.4",
     "@tanstack/react-query": "^5.90.21",
     "better-auth": "^1.5.4",
@@ -44,6 +47,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@react-email/preview-server": "5.2.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.18.0",
@@ -52,6 +56,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "^7.4.2",
+    "react-email": "5.2.9",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
