@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UserPlusIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getRecentAccounts } from "../admin.action";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { UserPlusIcon } from "lucide-react";
+import { getRecentAccounts } from "../admin.action";
 
 export function NewAccountsCard() {
   const { data: users, isLoading } = useQuery({
@@ -16,9 +16,7 @@ export function NewAccountsCard() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">
-          Nouveaux comptes
-        </CardTitle>
+        <CardTitle className="text-sm font-medium">Nouveaux comptes</CardTitle>
         <UserPlusIcon className="size-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>

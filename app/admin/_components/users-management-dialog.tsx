@@ -1,41 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listUsers } from "../admin.action";
 import { authClient } from "@/lib/auth-client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
+import { listUsers } from "../admin.action";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,15 +17,45 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  UsersIcon,
-  SearchIcon,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  BanIcon,
   MoreHorizontalIcon,
   PencilIcon,
-  BanIcon,
-  Trash2Icon,
+  SearchIcon,
   ShieldCheckIcon,
+  Trash2Icon,
+  UsersIcon,
 } from "lucide-react";
 import {
   Select,
@@ -364,10 +364,7 @@ function EditUserDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Nom</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Email</label>
@@ -533,9 +530,7 @@ function BanUserDialog({
         </AlertDialogHeader>
         {!isBanned && (
           <div className="space-y-2 px-1">
-            <label className="text-sm font-medium">
-              Raison (optionnel)
-            </label>
+            <label className="text-sm font-medium">Raison (optionnel)</label>
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -550,11 +545,7 @@ function BanUserDialog({
             disabled={loading}
             variant={isBanned ? "default" : "destructive"}
           >
-            {loading
-              ? "En cours..."
-              : isBanned
-                ? "Debannir"
-                : "Bannir"}
+            {loading ? "En cours..." : isBanned ? "Debannir" : "Bannir"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
