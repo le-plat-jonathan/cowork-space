@@ -11,8 +11,9 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, HomeIcon } from "lucide-react";
+import { CalendarIcon, HomeIcon, ShieldIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,6 +33,8 @@ const firstSection = [
 ];
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user.role === "admin";
   return (
     <Sidebar>
       <SidebarHeader className="text-sidebar-accent-foreground">
@@ -70,6 +73,32 @@ export default function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      "h-10 hover:bg-linear-to-r/oklch border border-none hover:border-[#5D6B6]/10 hover:from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
+                      pathname === "/app/admin" &&
+                        "bg-linear-to-r/oklch border-[#5D6B6]/10",
+                    )}
+                    isActive={pathname === "/app/admin"}
+                  >
+                    <Link href="/app/admin">
+                      <ShieldIcon className="size-5" />
+                      <span className="text-sm font-medium tracking-tight">
+                        Admin
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <DashboardUserButton />
