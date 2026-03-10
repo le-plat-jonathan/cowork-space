@@ -24,6 +24,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  phone      String?
+
   role       String?
   banned     Boolean?  @default(false)
   banReason  String?

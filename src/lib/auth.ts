@@ -35,5 +35,14 @@ export const auth = betterAuth({
   //     });
   //   },
   // },
+  user: {
+    additionalFields: {
+      phone: {
+        type: "string",
+        required: false,
+        nullable: true,
+      },
+    },
+  },
   plugins: [admin()],
 });

@@ -8,6 +8,7 @@ import {
   LogOutIcon,
   Monitor,
   Moon,
+  Settings2Icon,
   ShieldIcon,
   SunMedium,
 } from "lucide-react";
@@ -27,12 +28,15 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { unwrapSafePromise } from "@/lib/promises";
 import { useMutation } from "@tanstack/react-query";
+import { MyInfoDialog } from "@/features/sidebar/my-info-dialog";
 import { useTheme } from "next-themes";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function NavbarAuth() {
   const { data: session, isPending } = authClient.useSession();
   const theme = useTheme();
+  const [myInfoOpen, setMyInfoOpen] = useState(false);
 
   const onLogout = useMutation({
     mutationFn: async () => {
@@ -88,6 +92,13 @@ export default function NavbarAuth() {
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => setMyInfoOpen(true)}
+            >
+              <Settings2Icon className="size-4" />
+              <span>Mes Infos</span>
+            </DropdownMenuItem>
             {session.user.role === "admin" && (
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/admin">
@@ -126,6 +137,7 @@ export default function NavbarAuth() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      <MyInfoDialog open={myInfoOpen} onOpenChange={setMyInfoOpen} />
       </div>
     );
   }
