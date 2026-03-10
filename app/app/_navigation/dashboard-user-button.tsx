@@ -58,7 +58,7 @@ export default function DashboardUserButton() {
         </div>
         <ChevronDownIcon className="size-4 shrink-0" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="right" className="w-72">
+      <DropdownMenuContent align="end" side="right" className="w-52">
         <DropdownMenuLabel>
           <div className="flex flex-col gap-1">
             <span className="truncate font-medium"> {data?.user.name} </span>

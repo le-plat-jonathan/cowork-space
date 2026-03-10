@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, HomeIcon } from "lucide-react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,26 +48,39 @@ export default function DashboardSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {firstSection.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "h-10 hover:bg-linear-to-r/oklch border border-none hover:border-[#5D6B6]/10 hover:from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
-                      pathname === item.href &&
-                        "bg-linear-to-r/oklch border-[#5D6B6]/10",
+              <motion.div layout>
+                {firstSection.map((item) => (
+                  <SidebarMenuItem key={item.href} className="relative">
+                    {pathname === item.href && (
+                      <motion.div
+                        layoutId="sidebar-active-indicator"
+                        className="absolute inset-0 rounded-md bg-sidebar-accent -z-0"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
+                      />
                     )}
-                    isActive={pathname === item.href}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="size-5" />
-                      <span className="text-sm font-medium tracking-tight">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                    <SidebarMenuButton
+                      asChild
+                      className={cn(
+                        "relative z-10 h-10 border-none",
+                        pathname !== item.href &&
+                          "hover:bg-linear-to-r/oklch ...",
+                      )}
+                      isActive={pathname === item.href}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="size-5" />
+                        <span className="text-sm font-medium tracking-tight">
+                          {item.label}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </motion.div>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
