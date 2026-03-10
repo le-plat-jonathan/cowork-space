@@ -5,6 +5,7 @@ import { Form, useForm } from "@/features/form/tanstack-form";
 import { authClient } from "@/lib/auth-client";
 import { unwrapSafePromise } from "@/lib/promises";
 import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RegisterFormSchema, RegisterFormType } from "./register.schema";
@@ -19,10 +20,11 @@ export function RegisterForm() {
           email: values.email,
           password: values.password,
           name: values.name,
+          image: `https://api.dicebear.com/9.x/initials/svg?seed=${values.name}`,
         }),
       );
 
-      return { redirect: "/login" };
+      return { redirect: "/app" };
     },
     onError: (error) => {
       toast.error(error.message);
@@ -47,9 +49,8 @@ export function RegisterForm() {
   return (
     <Form form={form} className="flex flex-col gap-4 p-6 md:p-8">
       <div>
-        <Typography variant="h2">Créer un compte</Typography>
-        <Typography variant="p" className="text-muted-foreground">
-          Créez un compte pour accéder à votre espace personnel.
+        <Typography className="text-center" variant="h2">
+          Créer un compte
         </Typography>
       </div>
       <form.AppField name="name">
@@ -92,6 +93,15 @@ export function RegisterForm() {
       <form.SubmitButton className="w-full mt-1">
         M&apos;inscrire
       </form.SubmitButton>
+
+      <div className="flex items-center justify-center">
+        <Typography variant="p" className="text-muted-foreground">
+          Vous avez déjà un compte ?{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Se connecter
+          </Link>
+        </Typography>
+      </div>
     </Form>
   );
 }
