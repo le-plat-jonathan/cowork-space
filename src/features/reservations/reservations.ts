@@ -18,7 +18,7 @@ export  const getUserReservations = async () => {
 
 export const createReservation = async (startTime: Date, endTime: Date, idSpace: string, is_private: boolean, is_recurrent: boolean, reason: string) => {
     const user = await getRequiredUser()
-    const isSpaceAvailable = await checkSpaceAvaibality(idSpace, startTime, endTime)
+    const isSpaceAvailable = await checkSpaceAvailability(idSpace, startTime, endTime)
     if (!isSpaceAvailable) {
         console.error("Space not available")
         return false
@@ -39,7 +39,7 @@ export const createReservation = async (startTime: Date, endTime: Date, idSpace:
     return true
 }
 
-export const checkSpaceAvaibality = async (idSpace: string, startTime: Date, endTime: Date) => {
+export const checkSpaceAvailability = async (idSpace: string, startTime: Date, endTime: Date) => {
     const space = await prisma.space.findUnique({ where: { id_espace: idSpace } })
     if (!space || space.status === "unavailable") {
         console.error("Le space demandé n'existe pas")
