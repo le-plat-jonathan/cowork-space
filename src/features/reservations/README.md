@@ -71,3 +71,17 @@ Retourne le nombre de places restantes dans un open space sur un créneau donné
 | `-1` | Space invalide ou pas un open_space |
 | `0` | Complet |
 | `> 0` | Nombre de places disponibles |
+
+---
+
+## `canceledReservation(idReservation)`
+
+Annule une réservation en passant son statut à `canceled`. Vérifie que la réservation existe et que l'utilisateur connecté en est bien le propriétaire.
+
+- **Auth** : requise
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `idReservation` | `string` | ID de la réservation à annuler |
+
+- **Retourne** : `true` si annulée, `false` si réservation introuvable ou utilisateur non propriétaire
