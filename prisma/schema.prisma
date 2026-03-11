@@ -27,6 +27,7 @@ model User {
   image         String?
   sessions      Session[]
   accounts      Account[]
+  reservations  Reservation[]
 
   role       Role     @default(MEMBER)
 
@@ -97,8 +98,12 @@ model Reservation {
   is_recurrent Boolean   @default(false)
   is_private   Boolean   @default(false)
   reason String? 
+
   id_user String
+  user User @relation(fields: [id_user], references: [id])
+
   id_space String
+  space Space @relation(fields: [id_space], references: [id_espace])
   @@index([id_user, startTime, endTime])
   @@map("reservation")
 }
@@ -122,6 +127,9 @@ model Space {
   position_x Int
   position_y Int
   status StatusSpace @default(available)
+
+    reservations Reservation[]
+
   @@map("espace")
 }
 
