@@ -121,3 +121,41 @@ export const canceledReservation = async (idReservation: string) => {
     
     return true
 }
+
+export const updateReservation = async (
+    idReservation: string,
+    startTime?: Date,
+    endTime?: Date,
+    idSpace?: string,
+    is_private?: boolean,
+    is_recurrent?: boolean,
+    reason?: string
+) => {
+    const user = await getRequiredUser()
+
+    const reservation = await prisma.reservation.findUnique({
+        where: { id_reservation: idReservation }
+    })
+    if (!reservation) {
+        console.error("Reservation introuvable")
+        return false
+    }
+    if (user.id !== reservation.id_user) {
+        console.error("L'utilisateur n'est pas le propriétaire")
+        return false
+    }
+
+    await prisma.reservation.update({
+        where: { id_reservation: idReservation },
+        data: {
+            ...(startTime !== undefined && { startTime }),
+            ...(endTime !== undefined && { endTime }),
+            ...(idSpace !== undefined && { id_space: idSpace }),
+            ...(is_private !== undefined && { is_private }),
+            ...(is_recurrent !== undefined && { is_recurrent }),
+            ...(reason !== undefined && { reason }),
+        }
+    })
+
+    return true
+}
