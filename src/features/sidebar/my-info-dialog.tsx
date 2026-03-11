@@ -33,7 +33,8 @@ export function MyInfoDialog({ open, onOpenChange }: MyInfoDialogProps) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [newImage, setNewImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,15 +48,35 @@ export function MyInfoDialog({ open, onOpenChange }: MyInfoDialogProps) {
   }, [phoneFromDb, session?.user]);
 
   useEffect(() => {
-    if (!open) setNewImage(null);
+    if (!open) {
+      setImageFile(null);
+      setImagePreview(null);
+    }
   }, [open]);
 
   const mutation = useMutation({
     mutationFn: async () => {
+      let imageUrl = session?.user.image ?? undefined;
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error ?? "Erreur upload");
+        }
+        const data = await res.json();
+        imageUrl = data.url;
+      }
+
       await unwrapSafePromise(
         authClient.updateUser({
           name,
-          image: newImage ?? session?.user.image ?? undefined,
+          image: imageUrl,
           // @ts-expect-error - phone is an additionalField inferred server-side
           phone: phone || null,
         }),
@@ -79,14 +100,11 @@ export function MyInfoDialog({ open, onOpenChange }: MyInfoDialogProps) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setNewImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
-  const displayImage = newImage ?? session?.user.image ?? undefined;
+  const displayImage = imagePreview ?? session?.user.image ?? undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
