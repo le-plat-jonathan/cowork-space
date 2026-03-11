@@ -65,7 +65,7 @@ export default function SidebarUserButton() {
         </div>
         <ChevronDownIcon className="size-4 shrink-0" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="right" className="w-52">
+      <DropdownMenuContent align="end" side="top" className="w-[var(--radix-dropdown-menu-trigger-width)]">
         <DropdownMenuItem
           className="cursor-pointer flex items-center justify-between"
           onClick={() => setMyInfoOpen(true)}
