@@ -19,15 +19,19 @@ import {
   LogOutIcon,
   Monitor,
   Moon,
+  Settings2Icon,
   ShieldIcon,
   SunMedium,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
+import { MyInfoDialog } from "./my-info-dialog";
 
 export default function SidebarUserButton() {
   const { data } = authClient.useSession();
+  const [myInfoOpen, setMyInfoOpen] = useState(false);
 
   const theme = useTheme();
 
@@ -43,6 +47,7 @@ export default function SidebarUserButton() {
     },
   });
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-lg border border-border/10 p-3 w-full flex items-center justify-between bg-white/5 hover:bg-white/10 overflow-hidden gap-2">
         {data?.user.image && (
@@ -71,6 +76,13 @@ export default function SidebarUserButton() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer flex items-center justify-between"
+          onClick={() => setMyInfoOpen(true)}
+        >
+          Mes Infos
+          <Settings2Icon className="size-4 shrink-0" />
+        </DropdownMenuItem>
         {data?.user.role === "admin" && (
           <DropdownMenuItem
             className="cursor-pointer flex items-center justify-between"
@@ -111,5 +123,7 @@ export default function SidebarUserButton() {
         </DropdownMenuSub>
       </DropdownMenuContent>
     </DropdownMenu>
+    <MyInfoDialog open={myInfoOpen} onOpenChange={setMyInfoOpen} />
+    </>
   );
 }
