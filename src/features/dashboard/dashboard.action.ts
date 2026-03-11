@@ -47,9 +47,16 @@ export async function getDashboardData() {
     space: spaceMap.get(r.id_space) ?? null,
   }));
 
+  const allSpaces = await prisma.space.findMany({
+    where: { status: "available" },
+    select: { id_espace: true, nom: true, type: true },
+    orderBy: { nom: "asc" },
+  });
+
   return {
     upcomingReservations: reservationsWithSpace,
     nextReservation: reservationsWithSpace[0] ?? null,
     todayCount,
+    allSpaces,
   };
 }

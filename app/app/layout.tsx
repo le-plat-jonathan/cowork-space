@@ -9,9 +9,10 @@ export default async function RouteLayout({
   return (
     <SidebarProvider>
       <DashboardSidebar />
-      <main className="flex flex-col h-screen w-screen bg-muted">
+      <main className="flex flex-col h-screen w-screen bg-muted overflow-y-auto">
         {children}
       </main>
     </SidebarProvider>
   );
 }
+

@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ReservationCardActions } from "@/features/dashboard/reservation-card-actions";
 import { CalendarIcon, CalendarPlusIcon, ClockIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -32,7 +33,7 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  const [user, { upcomingReservations, nextReservation, todayCount }] =
+  const [user, { upcomingReservations, nextReservation, todayCount, allSpaces }] =
     await Promise.all([getRequiredUser(), getDashboardData()]);
 
   const today = new Date().toLocaleDateString("fr-FR", {
@@ -92,9 +93,20 @@ export default async function DashboardPage() {
                     { hour: "2-digit", minute: "2-digit" },
                   )}
                 </p>
-                <Badge variant={STATUS_VARIANT[nextReservation.status]}>
-                  {STATUS_LABEL[nextReservation.status]}
-                </Badge>
+                {nextReservation.reason && (
+                  <p className="text-sm text-muted-foreground italic">
+                    {nextReservation.reason}
+                  </p>
+                )}
+                <div className="flex items-center gap-3">
+                  <Badge variant={STATUS_VARIANT[nextReservation.status]}>
+                    {STATUS_LABEL[nextReservation.status]}
+                  </Badge>
+                  <ReservationCardActions
+                    reservation={nextReservation}
+                    allSpaces={allSpaces}
+                  />
+                </div>
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
@@ -141,6 +153,11 @@ export default async function DashboardPage() {
                     <p className="font-medium">
                       {r.space?.nom ?? "Espace inconnu"}
                     </p>
+                    {r.reason && (
+                      <p className="text-sm text-muted-foreground italic">
+                        {r.reason}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground capitalize">
                       {new Date(r.startTime).toLocaleDateString("fr-FR", {
                         weekday: "short",
@@ -159,9 +176,15 @@ export default async function DashboardPage() {
                       })}
                     </p>
                   </div>
-                  <Badge variant={STATUS_VARIANT[r.status]}>
-                    {STATUS_LABEL[r.status]}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={STATUS_VARIANT[r.status]}>
+                      {STATUS_LABEL[r.status]}
+                    </Badge>
+                    <ReservationCardActions
+                      reservation={r}
+                      allSpaces={allSpaces}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ))}
