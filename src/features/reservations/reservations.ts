@@ -99,4 +99,25 @@ export const checkCapacityMeetingRoom = async (idEspace: string, startTime: Date
 
     const capacityAvailable = space.capacity - count
     return capacityAvailable
-} 
+}
+
+export const canceledReservation = async (idReservation: string) => {
+    const user = await getRequiredUser()
+    const reservation = await prisma.reservation.findUnique({
+        where: {id_reservation: idReservation}
+    })
+    if (!reservation) {
+        console.error("Reservation introuvable")
+        return false
+    }
+    if (user.id != reservation.id_user) {
+        console.error("L'id_user n'est pas le proprietaire de la reservation")
+        return false
+    }
+    const reservationCancelled = await prisma.reservation.update({
+        where: {id_reservation: idReservation},
+        data: {status: "canceled"}
+    })
+    
+    return true
+}
