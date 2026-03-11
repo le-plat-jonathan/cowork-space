@@ -5,7 +5,12 @@
       "Bash(cat:*)",
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(npx prisma migrate dev --name add_phone_to_user)",
+      "Bash(npx prisma generate)",
+      "Bash(grep -l \"inferAdditionalFields\\\\|additionalFields\" \"c:/Users/Le Plat/Desktop/cowork-space/node_modules/better-auth/dist/client/plugins\"/*)"
     ]
   }
 }

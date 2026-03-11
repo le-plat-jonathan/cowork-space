@@ -29,7 +29,7 @@
 
 */
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('MEMBER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('user', 'admin');
 
 -- CreateEnum
 CREATE TYPE "TypeSpace" AS ENUM ('open_space', 'meeting_room');
@@ -110,7 +110,7 @@ DROP COLUMN "banReason",
 DROP COLUMN "banned",
 ADD COLUMN     "phone" TEXT,
 DROP COLUMN "role",
-ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'MEMBER';
+ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'user';
 
 -- DropTable
 DROP TABLE "equipement";
