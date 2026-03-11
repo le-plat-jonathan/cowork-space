@@ -78,3 +78,25 @@ export const checkSpaceAvailability = async (idSpace: string, startTime: Date, e
 
     return true
 }
+
+export const checkCapacityMeetingRoom = async (idEspace: string, startTime: Date, endTime: Date) => {
+    const space = await prisma.space.findFirst({
+        where: {id_espace: idEspace}
+    })
+    if (!space || space.type != "open_space") {
+        console.error("Bad isEspace")
+        return -1
+    }
+
+    const count = await prisma.reservation.count({
+            where: {
+                id_space: idEspace,
+                status: { not: "canceled" },
+                startTime: { lt: endTime },   // la résa existante commence AVANT la fin demandée
+                endTime: { gt: startTime },   // la résa existante se termine APRÈS le début demandé
+            }
+        })
+
+    const capacityAvailable = space.capacity - count
+    return capacityAvailable
+} 
