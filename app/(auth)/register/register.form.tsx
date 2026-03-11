@@ -1,0 +1,107 @@
+"use client";
+
+import { Typography } from "@/components/ui/typography";
+import { Form, useForm } from "@/features/form/tanstack-form";
+import { authClient } from "@/lib/auth-client";
+import { unwrapSafePromise } from "@/lib/promises";
+import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { RegisterFormSchema, RegisterFormType } from "./register.schema";
+
+export function RegisterForm() {
+  const router = useRouter();
+
+  const submitMutation = useMutation({
+    mutationFn: async (values: RegisterFormType) => {
+      await unwrapSafePromise(
+        authClient.signUp.email({
+          email: values.email,
+          password: values.password,
+          name: values.name,
+          image: `https://api.dicebear.com/9.x/initials/svg?seed=${values.name}`,
+        }),
+      );
+
+      return { redirect: "/app" };
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: (data) => {
+      router.push(data.redirect as never);
+    },
+  });
+
+  const form = useForm({
+    schema: RegisterFormSchema,
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+    onSubmit: async (values) => {
+      await submitMutation.mutateAsync(values);
+    },
+  });
+
+  return (
+    <Form form={form} className="flex flex-col gap-4 p-6 md:p-8">
+      <div>
+        <Typography className="text-center" variant="h2">
+          Créer un compte
+        </Typography>
+      </div>
+      <form.AppField name="name">
+        {(field) => (
+          <field.Field>
+            <field.Label>Nom</field.Label>
+            <field.Content>
+              <field.Input placeholder="Nom complet" />
+              <field.Message />
+            </field.Content>
+          </field.Field>
+        )}
+      </form.AppField>
+      <form.AppField name="email">
+        {(field) => (
+          <field.Field>
+            <field.Label>Email</field.Label>
+            <field.Content>
+              <field.Input type="email" placeholder="name@domaine.com" />
+              <field.Message />
+            </field.Content>
+          </field.Field>
+        )}
+      </form.AppField>
+
+      <form.AppField name="password">
+        {(field) => (
+          <field.Field>
+            <div className="flex items-center justify-between">
+              <field.Label>Mot de passe</field.Label>
+            </div>
+            <field.Content>
+              <field.Input type="password" placeholder="*******" />
+              <field.Message />
+            </field.Content>
+          </field.Field>
+        )}
+      </form.AppField>
+
+      <form.SubmitButton className="w-full mt-1">
+        M&apos;inscrire
+      </form.SubmitButton>
+
+      <div className="flex items-center justify-center">
+        <Typography variant="p" className="text-muted-foreground">
+          Vous avez déjà un compte ?{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Se connecter
+          </Link>
+        </Typography>
+      </div>
+    </Form>
+  );
+}
