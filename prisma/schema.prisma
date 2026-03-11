@@ -12,7 +12,10 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
+enum Role {
+  user
+  admin
+}
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -20,13 +23,12 @@ model User {
   updatedAt     DateTime  @updatedAt
   name          String
   emailVerified Boolean   @default(false)
+  phone         String?
   image         String?
   sessions      Session[]
   accounts      Account[]
 
-  phone      String?
-
-  role       String?
+  role       Role     @default(user)
   banned     Boolean?  @default(false)
   banReason  String?
   banExpires DateTime?
@@ -82,4 +84,89 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum ReservationStatus {
+  canceled
+  confirmed
+  waiting
+}
+
+model Reservation {
+  id_reservation String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  status        ReservationStatus @default(confirmed)
+  is_recurrent Boolean   @default(false)
+  is_private   Boolean   @default(false)
+  reason String? 
+  id_user String
+  id_space String
+  @@index([id_user, startTime, endTime])
+  @@map("reservation")
+}
+
+enum TypeSpace {
+  open_space
+  meeting_room
+}
+enum StatusSpace {
+  available
+  unavailable
+}
+
+model Space {
+  id_espace String @id @default(cuid())
+  nom       String
+  type   TypeSpace @default(open_space)
+  capacity Int
+  description String
+  plan String
+  position_x Int
+  position_y Int
+  status StatusSpace @default(available)
+  @@map("espace")
+}
+
+
+enum typeNotification {
+  confirmation
+  cancellation
+  reminder
+}
+enum StatusNotification {
+  send
+  is_waiting
+  failed
+}
+model Notification {
+  id_notification String @id @default(cuid())
+  type typeNotification 
+  date_send DateTime @default(now())
+  status StatusNotification @default(is_waiting)
+  id_reservation String
+  id_user String
+  @@index([id_user])
+  @@map("notification")
+}
+
+model Equipment {
+  id_equipment String @id @default(cuid())
+  name String
+  description String
+  @@map("equipment")
+}
+
+enum TypeRecurrence {
+  weekly
+  monthly
+}
+model Recurrence {
+  id_recurrence String @id @default(cuid())
+  type_recurrence TypeRecurrence
+  day_of_week Int
+  end_date_recurrence DateTime
+  id_reservation_parent Int
+  @@index([ id_reservation_parent])
+  @@map("recurrence")
 }
