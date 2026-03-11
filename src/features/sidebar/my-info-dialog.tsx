@@ -143,6 +143,8 @@ export function MyInfoDialog({ open, onOpenChange }: MyInfoDialogProps) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+33 6 12 34 56 78"
+              pattern="[\+\d\s\-\(\)]{7,20}"
+              title="Numéro de téléphone valide (chiffres, espaces, +, -, parenthèses)"
             />
           </div>
 
