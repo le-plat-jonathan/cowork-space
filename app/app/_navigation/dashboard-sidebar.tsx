@@ -51,7 +51,7 @@ export default function DashboardSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <motion.div layout>
+              <motion.div layout className="flex flex-col gap-1">
                 {firstSection.map((item) => (
                   <SidebarMenuItem key={item.href} className="relative">
                     {pathname === item.href && (
