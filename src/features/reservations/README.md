@@ -14,9 +14,9 @@ Retourne toutes les réservations de l'utilisateur connecté, triées par date d
 
 ---
 
-## `createReservation(startTime, endTime, idSpace, is_private, is_recurrent, reason)`
+## `createReservation(startTime, endTime, idSpace, is_private, is_recurrent, reason, participantIds)`
 
-Crée une réservation après vérification de la disponibilité du space.
+Crée une réservation après vérification de la disponibilité du space, puis invite les participants.
 
 - **Auth** : requise
 
@@ -28,6 +28,7 @@ Crée une réservation après vérification de la disponibilité du space.
 | `is_private` | `boolean` | Réservation privée |
 | `is_recurrent` | `boolean` | Réservation récurrente |
 | `reason` | `string` | Motif de la réservation |
+| `participantIds` | `string[]` | IDs des utilisateurs à inviter (meeting_room uniquement) |
 
 - **Retourne** : `true` si créée, `false` si space indisponible
 
@@ -85,3 +86,23 @@ Annule une réservation en passant son statut à `canceled`. Vérifie que la ré
 | `idReservation` | `string` | ID de la réservation à annuler |
 
 - **Retourne** : `true` si annulée, `false` si réservation introuvable ou utilisateur non propriétaire
+
+---
+
+## `updateReservation(idReservation, ...)`
+
+Modifie les champs d'une réservation existante. Tous les champs sauf `idReservation` sont optionnels.
+
+- **Auth** : requise (propriétaire uniquement)
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `idReservation` | `string` | ID de la réservation |
+| `startTime?` | `Date` | Nouveau début |
+| `endTime?` | `Date` | Nouvelle fin |
+| `idSpace?` | `string` | Nouveau space |
+| `is_private?` | `boolean` | Visibilité |
+| `is_recurrent?` | `boolean` | Récurrence |
+| `reason?` | `string` | Motif |
+
+- **Retourne** : `true` si modifiée, `false` si réservation introuvable ou utilisateur non propriétaire
