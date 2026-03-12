@@ -2,6 +2,7 @@
 
 import { getRequiredUser } from "@/lib/auth/auth-user";
 import prisma from "@/lib/prisma";
+import { inviteUserToReservation } from "../invite/invite";
 import { revalidatePath } from "next/cache";
 
 export  const getUserReservations = async () => {
@@ -16,7 +17,7 @@ export  const getUserReservations = async () => {
 
 }
 
-export const createReservation = async (startTime: Date, endTime: Date, idSpace: string, is_private: boolean, is_recurrent: boolean, reason: string) => {
+export const createReservation = async (startTime: Date, endTime: Date, idSpace: string, is_private: boolean, is_recurrent: boolean, reason: string, participantIds: string[]) => {
     const user = await getRequiredUser()
     const isSpaceAvailable = await checkSpaceAvailability(idSpace, startTime, endTime)
     if (!isSpaceAvailable) {
@@ -31,9 +32,13 @@ export const createReservation = async (startTime: Date, endTime: Date, idSpace:
             id_space: idSpace,
             is_private,
             is_recurrent,
-            reason,
+            reason
         }
     })
+
+    for (const p of participantIds) {
+        await inviteUserToReservation(reservation.id_reservation, p)
+    }
 
     console.log("Reservation crée : ", reservation)
     return true
@@ -75,7 +80,6 @@ export const checkSpaceAvailability = async (idSpace: string, startTime: Date, e
             return false
         }
     }
-
     return true
 }
 

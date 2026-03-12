@@ -1,24 +1,65 @@
 "use server";
 
-import prisma from "@/lib/prisma"; // path to your prisma client
-import { ReservationStatus, typeNotification } from "@/generated/prisma/enums";
+import { getRequiredUser } from "@/lib/auth/auth-user";
+import prisma from "@/lib/prisma";
 import { addHours } from "date-fns";
 import { sendEmail } from "@/lib/mail/send-email-resend";
+import { typeNotification } from "@/generated/prisma/enums";
 
-export async function sendInvite(
+export async function inviteUserToReservation(
   reservationId: string,
-  invitedUsers: string[]
+  invitedUserId: string
 ) {
+  const user = await getRequiredUser();
 
-  const notifications = invitedUsers.map((userId) => ({
-    type: typeNotification.confirmation,
-    id_user: userId,
-    id_reservation: reservationId
-  }));
-
-  await prisma.notification.createMany({
-    data: notifications
+  const reservation = await prisma.reservation.findUnique({
+    where: { id_reservation: reservationId },
+    include: { space: true, participants: true },
   });
+
+  if (!reservation) {
+    console.error("Reservation introuvable");
+    return false;
+  }
+
+  if (reservation.id_user !== user.id) {
+    console.error("Seul le owner peut inviter");
+    return false;
+  }
+
+  if (reservation.space.type !== "meeting_room") {
+    console.error("Les invitations sont réservées aux meeting_room");
+    return false;
+  }
+
+  const currentParticipants = reservation.participants.filter(
+    (p) => p.status !== "declined"
+  ).length;
+
+  // +1 pour le owner
+  if (currentParticipants + 1 >= reservation.space.capacity) {
+    console.error("Capacité maximale atteinte");
+    return false;
+  }
+
+  await prisma.reservationParticipant.create({
+    data: {
+      id_reservation: reservationId,
+      id_user: invitedUserId,
+      status: "pending",
+    },
+  });
+
+  // Notifier l'invité
+  await prisma.notification.create({
+    data: {
+      type: typeNotification.confirmation,
+      id_user: invitedUserId,
+      id_reservation: reservationId,
+    },
+  });
+
+  return true;
 }
 
 export async function sendReminder() {
@@ -28,41 +69,39 @@ export async function sendReminder() {
 
     const reservations = await prisma.reservation.findMany({
       where: {
-        startTime: {
-          gte: now,
-          lte: oneHourLater
-        },
-        status: ReservationStatus.confirmed
+        startTime: { gte: now, lte: oneHourLater },
+        status: "confirmed",
       },
       include: {
         user: true,
-      }
+        participants: {
+          where: { status: "accepted" },
+        },
+      },
     });
 
     for (const reservation of reservations) {
-      const owner = reservation.user;
-
-      const notifications = await prisma.notification.findMany({
-        where: { id_reservation: reservation.id_reservation }
+      const participantIds = reservation.participants.map((p) => p.id_user);
+      const usersToNotify = await prisma.user.findMany({
+        where: { id: { in: [reservation.user.id, ...participantIds] } },
       });
 
-      const invitedUserIds = notifications.map(n => n.id_user);
-
-      const usersToNotify = [owner.id, ...invitedUserIds];
-
-      const users = await prisma.user.findMany({
-        where: { id: { in: usersToNotify } }
-      });
-
-      for (const user of users) {
+      for (const u of usersToNotify) {
         await sendEmail({
-          to: user.email,
+          to: u.email,
           subject: "Rappel de votre réservation",
-          text: `Bonjour ${user.name},\n\nVous avez une réservation prévue pour ${reservation.startTime.toLocaleString()}.\nEspace: ${reservation.id_space}`
+          text: `Bonjour ${u.name},\n\nVous avez une réservation prévue pour ${reservation.startTime.toLocaleString()}.\nEspace: ${reservation.id_space}`,
+        });
+
+        await prisma.notification.create({
+          data: {
+            type: typeNotification.reminder,
+            id_user: u.id,
+            id_reservation: reservation.id_reservation,
+          },
         });
       }
     }
-
   } catch (error) {
     console.error("Erreur lors de l'envoi des rappels:", error);
   }

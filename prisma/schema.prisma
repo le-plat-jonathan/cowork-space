@@ -13,8 +13,8 @@ datasource db {
   provider = "postgresql"
 }
 enum Role {
-  MEMBER
-  ADMIN
+  MEMBER @map("user")
+  ADMIN  @map("admin")
 }
 model User {
   id            String    @id @default(cuid())
