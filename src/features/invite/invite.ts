@@ -1,11 +1,9 @@
-import { auth } from "@/lib/auth"; // path to your auth file
-import { toNextJsHandler } from "better-auth/next-js";
+"use server";
+
 import prisma from "@/lib/prisma"; // path to your prisma client
 import { ReservationStatus, typeNotification } from "@/generated/prisma/enums";
 import { addHours } from "date-fns";
 import { sendEmail } from "@/lib/mail/send-email-resend";
-
-export const { POST, GET } = toNextJsHandler(auth);
 
 export async function sendInvite(
   reservationId: string,

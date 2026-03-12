@@ -97,15 +97,37 @@ model Reservation {
   status        ReservationStatus @default(confirmed)
   is_recurrent Boolean   @default(false)
   is_private   Boolean   @default(false)
-  reason String? 
+  reason String?
 
   id_user String
   user User @relation(fields: [id_user], references: [id])
 
   id_space String
   space Space @relation(fields: [id_space], references: [id_espace])
+
+  participants ReservationParticipant[]
+
   @@index([id_user, startTime, endTime])
   @@map("reservation")
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  declined
+}
+
+model ReservationParticipant {
+  id             String           @id @default(cuid())
+  id_reservation String
+  id_user        String
+  status         InvitationStatus @default(pending)
+
+  reservation Reservation @relation(fields: [id_reservation], references: [id_reservation], onDelete: Cascade)
+
+  @@unique([id_reservation, id_user])
+  @@index([id_user])
+  @@map("reservation_participant")
 }
 
 enum TypeSpace {
