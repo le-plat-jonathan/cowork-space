@@ -28,6 +28,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   reservations  Reservation[]
+  participations ReservationParticipant[]
 
   role       Role     @default(MEMBER)
 
@@ -124,6 +125,7 @@ model ReservationParticipant {
   status         InvitationStatus @default(pending)
 
   reservation Reservation @relation(fields: [id_reservation], references: [id_reservation], onDelete: Cascade)
+  user User @relation(fields: [id_user], references: [id])
 
   @@unique([id_reservation, id_user])
   @@index([id_user])

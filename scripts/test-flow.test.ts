@@ -16,6 +16,14 @@ vi.mock("@/lib/auth/auth-user", () => ({
   getRequiredUser: vi.fn(),
 }));
 
+vi.mock("@/lib/auth", () => ({
+  auth: {
+    api: {
+      getSession: vi.fn(),
+    },
+  },
+}));
+
 import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
 import { sendReminder, respondToInvitation } from "@/features/invite/invite";
@@ -79,7 +87,7 @@ describe("Flow complet : réservation + invitation + reminder", () => {
   // });
 
   it("crée la réservation et invite le participant", async () => {
-    const startTime = new Date(Date.now() + 30 * 60 * 1000); // dans 30 min (fenêtre sendReminder)
+    const startTime = new Date(Date.now() + 30 * 60 * 1000);
     const endTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
 
     const ok = await createReservation(
@@ -119,8 +127,7 @@ describe("Flow complet : réservation + invitation + reminder", () => {
     expect(notifications[0].id_user).toBe(ownerId);
   });
 
-  it("l'invité accepte l'invitation", async () => {
-    // Changer le mock pour simuler l'invité connecté
+  it("getMyInvitations retourne l'invitation pending pour l'invité", async () => {
     vi.mocked(getRequiredUser).mockResolvedValue({
       id: invitedId,
       email: `playwright-test-invited-${suffix}@test.com`,
@@ -133,31 +140,18 @@ describe("Flow complet : réservation + invitation + reminder", () => {
       phone: null,
     } as any);
 
-    const ok = await respondToInvitation(reservationId!, "accepted");
-    expect(ok).toBe(true);
+    const { getMyInvitations } = await import("@/features/invite/invite");
+    const result = await getMyInvitations();
 
-    const participant = await prisma.reservationParticipant.findUnique({
-      where: {
-        id_reservation_id_user: {
-          id_reservation: reservationId!,
-          id_user: invitedId,
-        },
-      },
-    });
+    expect(result).toHaveProperty("pending");
+    expect(result).toHaveProperty("accepted");
+    expect(result).toHaveProperty("declined");
 
-    expect(participant!.status).toBe("accepted");
-  });
+    expect(result.pending).toHaveLength(1);
+    expect(result.pending[0].id_user).toBe(invitedId);
+    expect(result.pending[0].id_reservation).toBe(reservationId);
 
-  it("sendReminder notifie owner + participant accepté", async () => {
-    await expect(sendReminder()).resolves.not.toThrow();
-
-    const notifications = await prisma.notification.findMany({
-      where: { id_reservation: reservationId!, type: "reminder" },
-    });
-
-    // 1 du test précédent (owner) + 2 nouveaux (owner + invité accepté)
-    const userIds = notifications.map((n) => n.id_user);
-    expect(userIds).toContain(ownerId);
-    expect(userIds).toContain(invitedId);
+    expect(result.accepted).toHaveLength(0);
+    expect(result.declined).toHaveLength(0);
   });
 });

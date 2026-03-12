@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { addHours } from "date-fns";
 import { sendEmail } from "@/lib/mail/send-email-resend";
 import { typeNotification } from "@/generated/prisma/enums";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function inviteUserToReservation(
   reservationId: string,
@@ -107,17 +109,32 @@ export async function sendReminder() {
   }
 }
 
-export async function respondToInvitation(idReservation: string, status: "accepted" | "declined") {
-    const user = await getRequiredUser()
-    const reservation = await prisma.reservationParticipant.update({
+
+export async function getMyInvitations() {
+ const user = await getRequiredUser();
+
+  const invitations = await prisma.reservationParticipant.findMany({
     where: {
-      id_reservation_id_user: {
-        id_reservation: idReservation,
-        id_user: user.id,
-      },
+      id_user: user.id,
     },
-    data: { status },
+    include: {
+      reservation: {
+        include: {
+          user: true,
+          space: true,
+        }
+      }
+    },
+    orderBy: {
+      reservation: {
+        startTime: "asc"
+      }
+    }
   });
 
-  return true;
-} 
+  return {
+    pending: invitations.filter(i => i.status === "pending"),
+    accepted: invitations.filter(i => i.status === "accepted"),
+    declined: invitations.filter(i => i.status === "declined"),
+  };
+}
