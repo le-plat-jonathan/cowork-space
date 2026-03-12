@@ -28,7 +28,6 @@ import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
 import { sendReminder } from "@/features/invite/invite";
 import { getRequiredUser } from "@/lib/auth/auth-user";
-import { auth } from "@/lib/auth";
 
 describe("Flow complet : réservation + invitation + reminder", () => {
   const suffix = nanoid(6);
@@ -129,8 +128,16 @@ describe("Flow complet : réservation + invitation + reminder", () => {
   });
 
   it("getMyInvitations retourne l'invitation pending pour l'invité", async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValue({
-      user: { id: invitedId },
+    vi.mocked(getRequiredUser).mockResolvedValue({
+      id: invitedId,
+      email: `playwright-test-invited-${suffix}@test.com`,
+      name: "Test Invited",
+      emailVerified: true,
+      role: "MEMBER",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      image: null,
+      phone: null,
     } as any);
 
     const { getMyInvitations } = await import("@/features/invite/invite");
