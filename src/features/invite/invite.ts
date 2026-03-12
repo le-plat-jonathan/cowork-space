@@ -106,3 +106,18 @@ export async function sendReminder() {
     console.error("Erreur lors de l'envoi des rappels:", error);
   }
 }
+
+export async function respondToInvitation(idReservation: string, status: "accepted" | "declined") {
+    const user = await getRequiredUser()
+    const reservation = await prisma.reservationParticipant.update({
+    where: {
+      id_reservation_id_user: {
+        id_reservation: idReservation,
+        id_user: user.id,
+      },
+    },
+    data: { status },
+  });
+
+  return true;
+} 

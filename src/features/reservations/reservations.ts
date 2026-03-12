@@ -163,3 +163,25 @@ export const updateReservation = async (
 
     return true
 }
+
+export const getReservationById = async (reservationId: string) => {
+    const user = await getRequiredUser()
+
+    const reservation = await prisma.reservation.findUnique({
+        where:{
+            id_reservation: reservationId,
+        },
+        include: {participants: true}
+    })
+    if (!reservation) {
+        console.error("Aucunes reservation correspondante avec l'id de reservation")
+        return null
+    }
+
+    const isOwner = reservation.id_user === user.id
+    const isParticipant = reservation.participants.some(p => p.id_user === user.id)
+    
+    if (!isOwner && !isParticipant) return null
+
+    return reservation
+}

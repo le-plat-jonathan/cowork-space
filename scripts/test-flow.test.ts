@@ -18,7 +18,7 @@ vi.mock("@/lib/auth/auth-user", () => ({
 
 import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
-import { sendReminder } from "@/features/invite/invite";
+import { sendReminder, respondToInvitation } from "@/features/invite/invite";
 import { getRequiredUser } from "@/lib/auth/auth-user";
 
 describe("Flow complet : réservation + invitation + reminder", () => {
@@ -66,17 +66,17 @@ describe("Flow complet : réservation + invitation + reminder", () => {
     } as any);
   });
 
-  afterAll(async () => {
-    if (reservationId) {
-      await prisma.notification.deleteMany({ where: { id_reservation: reservationId } });
-      await prisma.reservationParticipant.deleteMany({ where: { id_reservation: reservationId } });
-      await prisma.reservation.delete({ where: { id_reservation: reservationId } });
-    }
-    await prisma.space.delete({ where: { id_espace: spaceId } });
-    await prisma.user.delete({ where: { id: invitedId } });
-    await prisma.user.delete({ where: { id: ownerId } });
-    await prisma.$disconnect();
-  });
+  // afterAll(async () => {
+  //   if (reservationId) {
+  //     await prisma.notification.deleteMany({ where: { id_reservation: reservationId } });
+  //     await prisma.reservationParticipant.deleteMany({ where: { id_reservation: reservationId } });
+  //     await prisma.reservation.delete({ where: { id_reservation: reservationId } });
+  //   }
+  //   await prisma.space.delete({ where: { id_espace: spaceId } });
+  //   await prisma.user.delete({ where: { id: invitedId } });
+  //   await prisma.user.delete({ where: { id: ownerId } });
+  //   await prisma.$disconnect();
+  // });
 
   it("crée la réservation et invite le participant", async () => {
     const startTime = new Date(Date.now() + 30 * 60 * 1000); // dans 30 min (fenêtre sendReminder)
@@ -117,5 +117,47 @@ describe("Flow complet : réservation + invitation + reminder", () => {
 
     expect(notifications.length).toBe(1);
     expect(notifications[0].id_user).toBe(ownerId);
+  });
+
+  it("l'invité accepte l'invitation", async () => {
+    // Changer le mock pour simuler l'invité connecté
+    vi.mocked(getRequiredUser).mockResolvedValue({
+      id: invitedId,
+      email: `playwright-test-invited-${suffix}@test.com`,
+      name: "Test Invited",
+      emailVerified: true,
+      role: "MEMBER",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      image: null,
+      phone: null,
+    } as any);
+
+    const ok = await respondToInvitation(reservationId!, "accepted");
+    expect(ok).toBe(true);
+
+    const participant = await prisma.reservationParticipant.findUnique({
+      where: {
+        id_reservation_id_user: {
+          id_reservation: reservationId!,
+          id_user: invitedId,
+        },
+      },
+    });
+
+    expect(participant!.status).toBe("accepted");
+  });
+
+  it("sendReminder notifie owner + participant accepté", async () => {
+    await expect(sendReminder()).resolves.not.toThrow();
+
+    const notifications = await prisma.notification.findMany({
+      where: { id_reservation: reservationId!, type: "reminder" },
+    });
+
+    // 1 du test précédent (owner) + 2 nouveaux (owner + invité accepté)
+    const userIds = notifications.map((n) => n.id_user);
+    expect(userIds).toContain(ownerId);
+    expect(userIds).toContain(invitedId);
   });
 });
