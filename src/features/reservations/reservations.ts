@@ -23,6 +23,50 @@ export const getSpaces = async () => {
   return spaces;
 };
 
+export const getSpacesWithReservations = async () => {
+  const now = new Date();
+
+  const spaces = await prisma.space.findMany({
+    orderBy: { nom: "asc" },
+  });
+
+  // Réservations actives en ce moment
+  const reservations = await prisma.reservation.findMany({
+    where: {
+      status: { not: "canceled" },
+      startTime: { lte: now },
+      endTime: { gte: now },
+    },
+  });
+
+  // Récupérer les users qui ont réservé
+  const userIds = [...new Set(reservations.map((r) => r.id_user))];
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, name: true, image: true },
+  });
+  const usersMap = new Map(users.map((u) => [u.id, u]));
+
+  return spaces.map((space) => {
+    const reservation = reservations.find((r) => r.id_space === space.id_espace);
+    const user = reservation ? usersMap.get(reservation.id_user) : null;
+
+    return {
+      ...space,
+      reservation: reservation
+        ? {
+            id: reservation.id_reservation,
+            userId: reservation.id_user,
+            userName: user?.name ?? "Inconnu",
+            userImage: user?.image ?? null,
+            startTime: reservation.startTime.toISOString(),
+            endTime: reservation.endTime.toISOString(),
+          }
+        : null,
+    };
+  });
+};
+
 export const createReservation = async (data: {
   id_space: string;
   startTime: string;
