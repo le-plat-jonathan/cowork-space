@@ -16,10 +16,19 @@ vi.mock("@/lib/auth/auth-user", () => ({
   getRequiredUser: vi.fn(),
 }));
 
+vi.mock("@/lib/auth", () => ({
+  auth: {
+    api: {
+      getSession: vi.fn(),
+    },
+  },
+}));
+
 import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
 import { sendReminder } from "@/features/invite/invite";
 import { getRequiredUser } from "@/lib/auth/auth-user";
+import { auth } from "@/lib/auth";
 
 describe("Flow complet : réservation + invitation + reminder", () => {
   const suffix = nanoid(6);
@@ -79,7 +88,7 @@ describe("Flow complet : réservation + invitation + reminder", () => {
   });
 
   it("crée la réservation et invite le participant", async () => {
-    const startTime = new Date(Date.now() + 30 * 60 * 1000); // dans 30 min (fenêtre sendReminder)
+    const startTime = new Date(Date.now() + 30 * 60 * 1000);
     const endTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
 
     const ok = await createReservation(
@@ -117,5 +126,25 @@ describe("Flow complet : réservation + invitation + reminder", () => {
 
     expect(notifications.length).toBe(1);
     expect(notifications[0].id_user).toBe(ownerId);
+  });
+
+  it("getMyInvitations retourne l'invitation pending pour l'invité", async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: { id: invitedId },
+    } as any);
+
+    const { getMyInvitations } = await import("@/features/invite/invite");
+    const result = await getMyInvitations();
+
+    expect(result).toHaveProperty("pending");
+    expect(result).toHaveProperty("accepted");
+    expect(result).toHaveProperty("declined");
+
+    expect(result.pending).toHaveLength(1);
+    expect(result.pending[0].id_user).toBe(invitedId);
+    expect(result.pending[0].id_reservation).toBe(reservationId);
+
+    expect(result.accepted).toHaveLength(0);
+    expect(result.declined).toHaveLength(0);
   });
 });
