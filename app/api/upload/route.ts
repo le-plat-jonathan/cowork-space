@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const ext = file.type.split("/")[1].replace("jpeg", "jpg");
-  const filename = `${nanoid(10)}.${ext}`;
+  const filename = `${new Date().toISOString().slice(0, 10)}-${nanoid(5)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const uploadDir = path.join(process.cwd(), "public", "uploads");
