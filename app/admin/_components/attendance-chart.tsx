@@ -13,8 +13,11 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { TrendingUpIcon } from "lucide-react";
+import { getAttendanceThisWeek } from "../admin.action";
 
 const chartConfig = {
   visitors: {
@@ -23,17 +26,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const emptyData = [
-  { day: "Lun", visitors: 0 },
-  { day: "Mar", visitors: 0 },
-  { day: "Mer", visitors: 0 },
-  { day: "Jeu", visitors: 0 },
-  { day: "Ven", visitors: 0 },
-  { day: "Sam", visitors: 0 },
-  { day: "Dim", visitors: 0 },
-];
-
 export function AttendanceChart() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin", "attendance-week"],
+    queryFn: () => getAttendanceThisWeek(),
+  });
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -44,24 +42,25 @@ export function AttendanceChart() {
         <TrendingUpIcon className="size-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
-          <LineChart data={emptyData} accessibilityLayer>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="day" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Line
-              type="monotone"
-              dataKey="visitors"
-              stroke="var(--color-visitors)"
-              strokeWidth={2}
-              dot={{ r: 4 }}
-            />
-          </LineChart>
-        </ChartContainer>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Aucune donnee de frequentation disponible
-        </p>
+        {isLoading ? (
+          <Skeleton className="h-[200px] w-full" />
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
+            <LineChart data={data} accessibilityLayer>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="day" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line
+                type="monotone"
+                dataKey="visitors"
+                stroke="var(--color-visitors)"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

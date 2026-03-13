@@ -13,8 +13,11 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { CalendarIcon } from "lucide-react";
+import { getReservationsThisWeek } from "../admin.action";
 
 const chartConfig = {
   reservations: {
@@ -23,23 +26,20 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const emptyWeekData = [
-  { day: "Lun", reservations: 0 },
-  { day: "Mar", reservations: 0 },
-  { day: "Mer", reservations: 0 },
-  { day: "Jeu", reservations: 0 },
-  { day: "Ven", reservations: 0 },
-  { day: "Sam", reservations: 0 },
-  { day: "Dim", reservations: 0 },
-];
-
-function ReservationChartPlaceholder({
+function ReservationChart({
   title,
   description,
+  spaceType,
 }: {
   title: string;
   description: string;
+  spaceType: "open_space" | "meeting_room";
 }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin", "reservations-week", spaceType],
+    queryFn: () => getReservationsThisWeek(spaceType),
+  });
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -50,22 +50,23 @@ function ReservationChartPlaceholder({
         <CalendarIcon className="size-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
-          <BarChart data={emptyWeekData} accessibilityLayer>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="day" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar
-              dataKey="reservations"
-              fill="var(--color-reservations)"
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ChartContainer>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Aucune donnee de reservation disponible
-        </p>
+        {isLoading ? (
+          <Skeleton className="h-[200px] w-full" />
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
+            <BarChart data={data} accessibilityLayer>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="day" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar
+                dataKey="reservations"
+                fill="var(--color-reservations)"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
@@ -73,18 +74,20 @@ function ReservationChartPlaceholder({
 
 export function OpenSpaceChart() {
   return (
-    <ReservationChartPlaceholder
+    <ReservationChart
       title="Open Space"
       description="Reservations cette semaine"
+      spaceType="open_space"
     />
   );
 }
 
 export function MeetingRoomChart() {
   return (
-    <ReservationChartPlaceholder
+    <ReservationChart
       title="Salles de reunion"
       description="Reservations cette semaine"
+      spaceType="meeting_room"
     />
   );
 }

@@ -65,17 +65,7 @@ export default function SidebarUserButton() {
         </div>
         <ChevronDownIcon className="size-4 shrink-0" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" side="right" className="w-52">
-        <DropdownMenuLabel>
-          <div className="flex flex-col gap-1">
-            <span className="truncate font-medium"> {data?.user.name} </span>
-            <span className="text-sm font-normal text-muted-foreground truncate">
-              {" "}
-              {data?.user.email}{" "}
-            </span>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" side="top" className="w-[var(--radix-dropdown-menu-trigger-width)]">
         <DropdownMenuItem
           className="cursor-pointer flex items-center justify-between"
           onClick={() => setMyInfoOpen(true)}
@@ -94,13 +84,6 @@ export default function SidebarUserButton() {
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem
-          className="cursor-pointer flex items-center justify-between"
-          onClick={() => onLogout.mutate()}
-        >
-          Déconnexion
-          <LogOutIcon className="size-4 shrink-0" />
-        </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <span>Theme</span>
@@ -121,6 +104,14 @@ export default function SidebarUserButton() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer flex items-center justify-between"
+          onClick={() => onLogout.mutate()}
+        >
+          Déconnexion
+          <LogOutIcon className="size-4 shrink-0" />
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
     <MyInfoDialog open={myInfoOpen} onOpenChange={setMyInfoOpen} />

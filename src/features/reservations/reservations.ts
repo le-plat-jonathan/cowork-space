@@ -44,20 +44,30 @@ export const createReservation = async (startTime: Date, endTime: Date, idSpace:
     return true
 }
 
-export const checkSpaceAvailability = async (idSpace: string, startTime: Date, endTime: Date) => {
+export const checkSpaceAvailability = async (
+    idSpace: string,
+    startTime: Date,
+    endTime: Date,
+    excludeReservationId?: string,
+) => {
     const space = await prisma.space.findUnique({ where: { id_espace: idSpace } })
     if (!space || space.status === "unavailable") {
         console.error("Le space demandé n'existe pas")
         return false
     }
 
+    const exclusion = excludeReservationId
+        ? { id_reservation: { not: excludeReservationId } }
+        : {}
+
     if (space.type === "meeting_room") {
         const conflict = await prisma.reservation.findFirst({
             where: {
+                ...exclusion,
                 id_space: idSpace,
                 status: { not: "canceled" },
-                startTime: { lt: endTime },   // la résa existante commence AVANT la fin demandée
-                endTime: { gt: startTime },   // la résa existante se termine APRÈS le début demandé
+                startTime: { lt: endTime },
+                endTime: { gt: startTime },
             }
         })
 
@@ -68,10 +78,11 @@ export const checkSpaceAvailability = async (idSpace: string, startTime: Date, e
     } else if (space.type === "open_space") {
         const count = await prisma.reservation.count({
             where: {
+                ...exclusion,
                 id_space: idSpace,
                 status: { not: "canceled" },
-                startTime: { lt: endTime },   // la résa existante commence AVANT la fin demandée
-                endTime: { gt: startTime },   // la résa existante se termine APRÈS le début demandé
+                startTime: { lt: endTime },
+                endTime: { gt: startTime },
             }
         })
 
@@ -148,6 +159,18 @@ export const updateReservation = async (
         console.error("L'utilisateur n'est pas le propriétaire")
         return false
     }
+
+    const targetSpace = idSpace ?? reservation.id_space
+    const targetStart = startTime ?? reservation.startTime
+    const targetEnd = endTime ?? reservation.endTime
+
+    const isAvailable = await checkSpaceAvailability(
+        targetSpace,
+        targetStart,
+        targetEnd,
+        idReservation,
+    )
+    if (!isAvailable) return false
 
     await prisma.reservation.update({
         where: { id_reservation: idReservation },
