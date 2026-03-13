@@ -109,7 +109,6 @@ export async function sendReminder() {
   }
 }
 
-
 export async function getMyInvitations() {
  const user = await getRequiredUser();
 
@@ -137,4 +136,17 @@ export async function getMyInvitations() {
     accepted: invitations.filter(i => i.status === "accepted"),
     declined: invitations.filter(i => i.status === "declined"),
   };
+}
+
+export async function searchUser(query: string) {
+    const users = prisma.user.findMany({
+        where:{
+            name: { contains: query, mode: "insensitive" }
+        },
+        select: { 
+            id: true, name: true, email: true, image: true 
+        } 
+    })
+
+    return users
 }
