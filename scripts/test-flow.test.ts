@@ -27,6 +27,7 @@ vi.mock("@/lib/auth", () => ({
 import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
 import { sendReminder } from "@/features/invite/invite";
+import { getSpaces, getSpacesById, getSpaceQuery } from "@/features/spaces/space";
 import { getRequiredUser } from "@/lib/auth/auth-user";
 
 describe("Flow complet : réservation + invitation + reminder", () => {
@@ -170,7 +171,6 @@ describe("Flow complet : réservation + invitation + reminder", () => {
   });
 
   it("getReservationParticipants retourne le owner et les participants", async () => {
-  // On mock l'auth pour le owner
   vi.mocked(getRequiredUser).mockResolvedValue({
     id: ownerId,
     email: `playwright-test-owner-${suffix}@test.com`,
@@ -187,13 +187,35 @@ describe("Flow complet : réservation + invitation + reminder", () => {
   const result = await getReservationParticipants(reservationId!);
 
   expect(result).not.toBeNull();
-
-  // Le owner est correct
   expect(result!.owner.id).toBe(ownerId);
-
-  // Un seul participant
   expect(result!.participants).toHaveLength(1);
   expect(result!.participants[0].id).toBe(invitedId);
   expect(result!.participants[0].status).toBe("pending");
-});
+  });
+
+  it("getSpaces retourne la liste des espaces (dont le test space)", async () => {
+    const spaces = await getSpaces();
+    expect(Array.isArray(spaces)).toBe(true);
+    const found = spaces.find((s) => s.id_espace === spaceId);
+    expect(found).not.toBeUndefined();
+    expect(found!.type).toBe("meeting_room");
+  });
+
+  it("getSpacesById retourne le bon espace", async () => {
+    const space = await getSpacesById(spaceId);
+    expect(space).not.toBeNull();
+    expect(space!.id_espace).toBe(spaceId);
+    expect(space!.nom).toBe("Test Meeting Room");
+  });
+
+  it("getSpacesById retourne null si l'espace n'existe pas", async () => {
+    const space = await getSpacesById("id-inexistant");
+    expect(space).toBeNull();
+  });
+
+  it("getSpaceQuery filtre les espaces par nom", async () => {
+    const spaces = await getSpaceQuery("Test Meeting");
+    const found = spaces.find((s) => s.id_espace === spaceId);
+    expect(found).not.toBeUndefined();
+  });
 });
