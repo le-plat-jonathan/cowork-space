@@ -25,3 +25,14 @@ export const getSpaceQuery = async (query: string) => {
 
     return spaces
 }
+
+export const getSpaceByQuery = async (type?: "meeting_room" | "open_space", capacity?: number) => {
+    const spaces = await prisma.space.findMany({
+        where: {
+            ...(type && { type }),
+            ...(capacity && { capacity: { gte: capacity } }),
+        },
+    })
+
+    return spaces
+}
