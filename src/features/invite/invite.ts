@@ -150,3 +150,19 @@ export async function searchUser(query: string) {
 
     return users
 }
+
+export async function answerToInvitation(idReservation: string, answer: "accepted" | "declined") {
+    
+    const user = await getRequiredUser()
+    const invitation = await prisma.reservationParticipant.update({
+        where: {
+            id_reservation_id_user: {
+                id_user: user.id,
+                id_reservation: idReservation
+            }
+        },
+        data: { status: answer }
+    })
+
+    return invitation
+}
