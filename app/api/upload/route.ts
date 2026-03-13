@@ -1,7 +1,6 @@
 import { getRequiredUser } from "@/lib/auth/auth-user";
 import { nanoid } from "nanoid";
 import { writeFile } from "node:fs/promises";
-import { headers } from "next/headers";
 import path from "node:path";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
