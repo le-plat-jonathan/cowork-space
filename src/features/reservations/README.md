@@ -4,16 +4,21 @@ Fichier : `src/features/reservations/reservations.ts`
 
 ---
 
-**fonction** : `getUserReservations`
-**utilité** : Retourne toutes les réservations de l'utilisateur connecté, triées par date de début croissante
-**params entrée** : aucun
-**sortie** : `Reservation[]`
+**Fonction** : `getUserReservations`
+
+**Utilité** : Retourne toutes les réservations de l'utilisateur connecté, triées par date de début croissante
+
+**Params entrée** : aucun
+
+**Sortie** : `Reservation[]`
 
 ---
 
-**fonction** : `createReservation`
-**utilité** : Crée une réservation après vérification de la disponibilité du space, puis invite les participants
-**params entrée** :
+**Fonction** : `createReservation`
+
+**Utilité** : Crée une réservation après vérification de la disponibilité du space, puis invite les participants
+
+**Params entrée** :
 - `startTime: Date` — début de la réservation
 - `endTime: Date` — fin de la réservation
 - `idSpace: string` — ID du space à réserver
@@ -22,44 +27,52 @@ Fichier : `src/features/reservations/reservations.ts`
 - `reason: string` — motif
 - `participantIds: string[]` — IDs des utilisateurs à inviter (meeting_room uniquement)
 
-**sortie** : `true` si créée, `false` si space indisponible
+**Sortie** : `true` si créée, `false` si space indisponible
 
 ---
 
-**fonction** : `checkSpaceAvailability`
-**utilité** : Vérifie si un space est disponible sur un créneau donné. Pour un `meeting_room`, vérifie l'absence de conflit. Pour un `open_space`, vérifie que la capacité n'est pas atteinte
-**params entrée** :
+**Fonction** : `checkSpaceAvailability`
+
+**Utilité** : Vérifie si un space est disponible sur un créneau donné. Pour un `meeting_room`, vérifie l'absence de conflit. Pour un `open_space`, vérifie que la capacité n'est pas atteinte
+
+**Params entrée** :
 - `idSpace: string`
 - `startTime: Date`
 - `endTime: Date`
 
-**sortie** : `true` si disponible, `false` sinon
+**Sortie** : `true` si disponible, `false` sinon
 
 ---
 
-**fonction** : `checkCapacityMeetingRoom`
-**utilité** : Retourne le nombre de places restantes dans un open space sur un créneau donné
-**params entrée** :
+**Fonction** : `checkCapacityMeetingRoom`
+
+**Utilité** : Retourne le nombre de places restantes dans un open space sur un créneau donné
+
+**Params entrée** :
 - `idEspace: string`
 - `startTime: Date`
 - `endTime: Date`
 
-**sortie** : `-1` si espace invalide, `0` si complet, `> 0` nombre de places disponibles
+**Sortie** : `-1` si espace invalide, `0` si complet, `> 0` nombre de places disponibles
 
 ---
 
-**fonction** : `canceledReservation`
-**utilité** : Annule une réservation (owner uniquement)
-**params entrée** :
+**Fonction** : `canceledReservation`
+
+**Utilité** : Annule une réservation (owner uniquement)
+
+**Params entrée** :
 - `idReservation: string`
 
-**sortie** : `true` si annulée, `false` si introuvable ou non propriétaire
+**Sortie** : `true` si annulée, `false` si introuvable ou non propriétaire
 
 ---
 
-**fonction** : `updateReservation`
-**utilité** : Modifie les champs d'une réservation existante (owner uniquement). Tous les champs sauf `idReservation` sont optionnels
-**params entrée** :
+**Fonction** : `updateReservation`
+
+**Utilité** : Modifie les champs d'une réservation existante (owner uniquement). Tous les champs sauf `idReservation` sont optionnels
+
+**Params entrée** :
 - `idReservation: string`
 - `startTime?: Date`
 - `endTime?: Date`
@@ -68,29 +81,36 @@ Fichier : `src/features/reservations/reservations.ts`
 - `is_recurrent?: boolean`
 - `reason?: string`
 
-**sortie** : `true` si modifiée, `false` si introuvable ou non propriétaire
+**Sortie** : `true` si modifiée, `false` si introuvable ou non propriétaire
 
 ---
 
-**fonction** : `getReservationById`
-**utilité** : Retourne le détail d'une réservation avec ses participants. Accessible uniquement au owner ou aux participants
-**params entrée** :
+**Fonction** : `getReservationById`
+
+**Utilité** : Retourne le détail d'une réservation avec ses participants. Accessible uniquement au owner ou aux participants
+
+**Params entrée** :
 - `reservationId: string`
 
-**sortie** : `Reservation & { participants }` ou `null` si introuvable / accès refusé
+**Sortie** : `Reservation & { participants }` ou `null` si introuvable / accès refusé
 
 ---
 
-**fonction** : `getReservationParticipants`
-**utilité** : Retourne le owner et la liste des participants d'une réservation. Accessible uniquement au owner ou aux participants
-**params entrée** :
+**Fonction** : `getReservationParticipants`
+
+**Utilité** : Retourne le owner et la liste des participants d'une réservation. Accessible uniquement au owner ou aux participants
+
+**Params entrée** :
 - `reservationId: string`
 
-**sortie** : `{ owner: User, participants: (User & { status })[] }` ou `null` si introuvable / accès refusé
+**Sortie** : `{ owner: User, participants: (User & { status })[] }` ou `null` si introuvable / accès refusé
 
 ---
 
-**fonction** : `getAllReservation`
-**utilité** : Retourne toutes les réservations (admin uniquement)
-**params entrée** : aucun
-**sortie** : `Reservation[]` ou `null` si aucune réservation
+**Fonction** : `getAllReservation`
+
+**Utilité** : Retourne toutes les réservations (admin uniquement)
+
+**Params entrée** : aucun
+
+**Sortie** : `Reservation[]` ou `null` si aucune réservation
