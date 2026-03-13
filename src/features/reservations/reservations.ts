@@ -3,7 +3,7 @@
 import { getRequiredUser } from "@/lib/auth/auth-user";
 import prisma from "@/lib/prisma";
 import { inviteUserToReservation } from "../invite/invite";
-import { revalidatePath } from "next/cache";
+import { getRequiredAdmin } from "@/lib/auth/auth-user";
 
 export  const getUserReservations = async () => {
     const user = await getRequiredUser();
@@ -222,3 +222,14 @@ export const getReservationParticipants = async (reservationId: string) => {
     })),
   };
 };
+
+export const getAllReservation = async () => {
+    await getRequiredAdmin()
+
+    const reservation = await prisma.reservation.findMany()
+    if (reservation.length === 0) {
+        console.error("Aucune reservation trouvée")
+        return null
+    }
+    return reservation
+}
