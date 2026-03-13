@@ -185,3 +185,40 @@ export const getReservationById = async (reservationId: string) => {
 
     return reservation
 }
+
+export const getReservationParticipants = async (reservationId: string) => {
+    const user = await getRequiredUser();
+
+    const reservation = await prisma.reservation.findUnique({
+    where: { id_reservation: reservationId },
+    include: {
+    participants: {
+        include: {
+            user: true,
+        },
+        },
+        user: true,
+    },
+  });
+
+  if (!reservation) {
+    console.error("Reservation introuvable");
+    return null;
+  }
+
+  const isOwner = reservation.id_user === user.id;
+  const isParticipant = reservation.participants.some((p) => p.id_user === user.id);
+
+  if (!isOwner && !isParticipant) {
+    console.error("Accès refusé");
+    return null;
+  }
+
+  return {
+    owner: reservation.user,
+    participants: reservation.participants.map((p) => ({
+      ...p.user,
+      status: p.status,
+    })),
+  };
+};

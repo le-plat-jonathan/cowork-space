@@ -154,4 +154,32 @@ describe("Flow complet : réservation + invitation + reminder", () => {
     expect(result.accepted).toHaveLength(0);
     expect(result.declined).toHaveLength(0);
   });
+
+  it("getReservationParticipants retourne le owner et les participants", async () => {
+  // On mock l'auth pour le owner
+  vi.mocked(getRequiredUser).mockResolvedValue({
+    id: ownerId,
+    email: `playwright-test-owner-${suffix}@test.com`,
+    name: "Test Owner",
+    emailVerified: true,
+    role: "MEMBER",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    image: null,
+    phone: null,
+  } as any);
+
+  const { getReservationParticipants } = await import("@/features/reservations/reservations");
+  const result = await getReservationParticipants(reservationId!);
+
+  expect(result).not.toBeNull();
+
+  // Le owner est correct
+  expect(result!.owner.id).toBe(ownerId);
+
+  // Un seul participant
+  expect(result!.participants).toHaveLength(1);
+  expect(result!.participants[0].id).toBe(invitedId);
+  expect(result!.participants[0].status).toBe("pending");
+});
 });
