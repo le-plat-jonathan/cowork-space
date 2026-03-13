@@ -26,7 +26,7 @@ vi.mock("@/lib/auth", () => ({
 
 import prisma from "@/lib/prisma";
 import { createReservation } from "@/features/reservations/reservations";
-import { sendReminder, respondToInvitation } from "@/features/invite/invite";
+import { sendReminder } from "@/features/invite/invite";
 import { getRequiredUser } from "@/lib/auth/auth-user";
 
 describe("Flow complet : réservation + invitation + reminder", () => {
@@ -153,6 +153,20 @@ describe("Flow complet : réservation + invitation + reminder", () => {
 
     expect(result.accepted).toHaveLength(0);
     expect(result.declined).toHaveLength(0);
+  });
+
+  it("searchUser trouve l'utilisateur par nom", async () => {
+    const { searchUser } = await import("@/features/invite/invite");
+
+    const results = await searchUser("Test Invited");
+
+    const found = results.find((u) => u.id === invitedId);
+    expect(found).not.toBeUndefined();
+    expect(found!.name).toBe("Test Invited");
+    expect(found).toHaveProperty("id");
+    expect(found).toHaveProperty("email");
+    expect(found).toHaveProperty("image");
+    expect(found).not.toHaveProperty("role");
   });
 
   it("getReservationParticipants retourne le owner et les participants", async () => {

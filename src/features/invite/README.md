@@ -4,33 +4,46 @@ Fichier : `src/features/invite/invite.ts`
 
 ---
 
-## `inviteUserToReservation(reservationId, invitedUserId)`
+**fonction** : `inviteUserToReservation`
+**utilité** : Invite un utilisateur à une réservation `meeting_room`. Crée un `ReservationParticipant` (status `pending`) et une `Notification` de type `confirmation` pour l'invité. Owner uniquement, vérifie la capacité
+**params entrée** :
+- `reservationId: string` — ID de la réservation
+- `invitedUserId: string` — ID de l'utilisateur à inviter
 
-Invite un utilisateur à une réservation de type `meeting_room`. Crée une entrée `ReservationParticipant` (status `pending`) et une `Notification` de type `confirmation` pour l'invité.
-
-- **Auth** : requise (propriétaire de la réservation uniquement)
-- **Conditions** :
-  - Le space doit être de type `meeting_room`
-  - La capacité (participants non refusés + owner) ne doit pas être atteinte
-
-| Paramètre | Type | Description |
-|---|---|---|
-| `reservationId` | `string` | ID de la réservation |
-| `invitedUserId` | `string` | ID de l'utilisateur à inviter |
-
-- **Retourne** : `true` si invité, `false` sinon
+**sortie** : `true` si invité, `false` sinon (non owner, pas une meeting_room, capacité atteinte)
 
 ---
 
-## `sendReminder()`
+**fonction** : `sendReminder`
+**utilité** : Fonction cron — envoie un email de rappel aux owner + participants `accepted` dont la réservation `confirmed` démarre dans moins d'une heure. Crée une `Notification` de type `reminder` par personne notifiée. Ne pas appeler depuis le front
+**params entrée** : aucun
+**sortie** : `void`
 
-Fonction cron — ne pas appeler depuis le front.
+---
 
-Envoie un email de rappel à tous les utilisateurs concernés par une réservation `confirmed` démarrant dans moins d'une heure. Crée une `Notification` de type `reminder` pour chaque personne notifiée.
+**fonction** : `respondToInvitation`
+**utilité** : Permet à l'invité de répondre à une invitation
+**params entrée** :
+- `idReservation: string`
+- `status: "accepted" | "declined"`
 
-- **Destinataires** : owner + participants avec statut `accepted`
-- **Auth** : non requise
-- **Déclenchement** : via `app/api/cron/reminder/route.ts`
+**sortie** : `true`
+
+---
+
+**fonction** : `getMyInvitations`
+**utilité** : Retourne les invitations de l'utilisateur connecté, groupées par statut
+**params entrée** : aucun
+**sortie** : `{ pending: [], accepted: [], declined: [] }` — chaque entrée inclut la réservation avec son espace et son owner
+
+---
+
+**fonction** : `searchUser`
+**utilité** : Cherche des utilisateurs par nom (insensible à la casse) — utilisé pour l'UI d'invitation
+**params entrée** :
+- `query: string` — texte à chercher dans le nom
+
+**sortie** : `{ id, name, email, image }[]`
 
 ---
 
@@ -38,5 +51,5 @@ Envoie un email de rappel à tous les utilisateurs concernés par une réservati
 
 | Modèle | Rôle |
 |---|---|
-| `ReservationParticipant` | Qui participe à la réservation (`pending` / `accepted` / `declined`) |
+| `ReservationParticipant` | Qui participe (`pending` / `accepted` / `declined`) |
 | `Notification` | Historique des communications envoyées (`confirmation`, `reminder`, `cancellation`) |

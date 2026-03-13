@@ -139,7 +139,7 @@ export async function getMyInvitations() {
 }
 
 export async function searchUser(query: string) {
-    const users = prisma.user.findMany({
+    const users = await prisma.user.findMany({
         where:{
             name: { contains: query, mode: "insensitive" }
         },
