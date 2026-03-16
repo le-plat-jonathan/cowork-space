@@ -32,7 +32,7 @@ export const getRequiredUser = async () => {
 
 export const getRequiredAdmin = async () => {
   const user = await getRequiredUser();
-  if (user.role !== "admin") {
+  if (user.role?.toLowerCase() !== "admin") {
     unauthorized();
   }
 

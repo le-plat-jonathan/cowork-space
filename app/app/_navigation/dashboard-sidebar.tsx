@@ -35,7 +35,7 @@ const firstSection = [
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
-  const isAdmin = session?.user.role === "admin";
+  const isAdmin = session?.user.role?.toLowerCase() === "admin";
   return (
     <Sidebar>
       <SidebarHeader className="text-sidebar-accent-foreground">

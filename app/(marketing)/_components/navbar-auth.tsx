@@ -99,7 +99,7 @@ export default function NavbarAuth() {
               <Settings2Icon className="size-4" />
               <span>Mes Infos</span>
             </DropdownMenuItem>
-            {session.user.role === "admin" && (
+            {session.user.role?.toLowerCase() === "admin" && (
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/admin">
                   <ShieldIcon className="size-4" />

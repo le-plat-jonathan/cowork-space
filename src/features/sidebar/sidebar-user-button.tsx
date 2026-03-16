@@ -73,7 +73,7 @@ export default function SidebarUserButton() {
           Mes Infos
           <Settings2Icon className="size-4 shrink-0" />
         </DropdownMenuItem>
-        {data?.user.role === "admin" && (
+        {data?.user.role?.toLowerCase() === "admin" && (
           <DropdownMenuItem
             className="cursor-pointer flex items-center justify-between"
             asChild
