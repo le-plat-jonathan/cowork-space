@@ -11,7 +11,9 @@
       "Bash(npx prisma migrate dev --name add_phone_to_user)",
       "Bash(npx prisma generate)",
       "Bash(grep -l \"inferAdditionalFields\\\\|additionalFields\" \"c:/Users/Le Plat/Desktop/cowork-space/node_modules/better-auth/dist/client/plugins\"/*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npm init:*)",
+      "Bash(npx playwright:*)"
     ]
   }
 }
