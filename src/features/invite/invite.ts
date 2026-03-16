@@ -60,6 +60,17 @@ export async function inviteUserToReservation(
       id_reservation: reservationId,
     },
   });
+  const invitedUser = await prisma.user.findUnique({
+  where: { id: invitedUserId }
+});
+
+if (invitedUser) {
+  await sendEmail({
+    to: invitedUser.email,
+    subject: "Vous avez été invité à une réservation",
+    text: `Bonjour ${invitedUser.name},\n\nVous avez été invité à rejoindre une réservation.\nConnectez-vous pour accepter ou refuser l'invitation.`
+  });
+}
 
   return true;
 }
