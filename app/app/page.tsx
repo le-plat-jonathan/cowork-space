@@ -9,7 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ReservationCardActions } from "@/features/dashboard/reservation-card-actions";
-import { CalendarIcon, CalendarPlusIcon, ClockIcon } from "lucide-react";
+import { ParticipantInfoDialog } from "@/features/dashboard/participant-info-dialog";
+import { CalendarIcon, CalendarPlusIcon, ClockIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -98,6 +99,19 @@ export default async function DashboardPage() {
                     {nextReservation.reason}
                   </p>
                 )}
+                {nextReservation.participants.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <UsersIcon className="size-3.5 text-muted-foreground shrink-0" />
+                    {nextReservation.participants.map((p, i) => (
+                      <span key={p.id} className="text-sm">
+                        <ParticipantInfoDialog participant={p} />
+                        {i < nextReservation.participants.length - 1 && (
+                          <span className="text-muted-foreground">,</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <Badge variant={STATUS_VARIANT[nextReservation.status]}>
                     {STATUS_LABEL[nextReservation.status]}
@@ -175,6 +189,19 @@ export default async function DashboardPage() {
                         minute: "2-digit",
                       })}
                     </p>
+                    {r.participants.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        <UsersIcon className="size-3 text-muted-foreground shrink-0" />
+                        {r.participants.map((p, i) => (
+                          <span key={p.id} className="text-sm">
+                            <ParticipantInfoDialog participant={p} />
+                            {i < r.participants.length - 1 && (
+                              <span className="text-muted-foreground">,</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={STATUS_VARIANT[r.status]}>
