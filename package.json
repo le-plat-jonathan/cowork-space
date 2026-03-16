@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "email:dev": "email dev"
+    "email:dev": "email dev",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -50,6 +52,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@react-email/preview-server": "5.2.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
