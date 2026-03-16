@@ -14,7 +14,7 @@ import {
 import SidebarUserButton from "@/features/sidebar/sidebar-user-button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, HomeIcon } from "lucide-react";
+import { CalendarIcon, HomeIcon, ShieldIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,7 +52,12 @@ export default function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <motion.div layout className="flex flex-col gap-1">
-                {firstSection.map((item) => (
+                {[
+                  ...firstSection,
+                  ...(isAdmin
+                    ? [{ icon: ShieldIcon, label: "Administration", href: "/admin" }]
+                    : []),
+                ].map((item) => (
                   <SidebarMenuItem key={item.href} className="relative">
                     {pathname === item.href && (
                       <motion.div

@@ -1,4 +1,4 @@
-import { getDashboardData } from "@/features/dashboard/dashboard.action";
+import { getDashboardData, getPendingInvitations } from "@/features/dashboard/dashboard.action";
 import { getRequiredUser } from "@/lib/auth/auth-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ReservationCardActions } from "@/features/dashboard/reservation-card-actions";
 import { ParticipantInfoDialog } from "@/features/dashboard/participant-info-dialog";
-import { CalendarIcon, CalendarPlusIcon, ClockIcon, UsersIcon } from "lucide-react";
+import { InvitationActions } from "@/features/dashboard/invitation-actions";
+import { BellIcon, CalendarIcon, CalendarPlusIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -34,8 +36,11 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  const [user, { upcomingReservations, nextReservation, todayCount, allSpaces }] =
-    await Promise.all([getRequiredUser(), getDashboardData()]);
+  const [
+    user,
+    { upcomingReservations, nextReservation, allSpaces },
+    pendingInvitations,
+  ] = await Promise.all([getRequiredUser(), getDashboardData(), getPendingInvitations()]);
 
   const today = new Date().toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -130,19 +135,64 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Aujourd'hui */}
-        <Card>
+        {/* Notifications / invitations en attente */}
+        <Card className="flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Aujourd&apos;hui
+              Mes invitations
             </CardTitle>
-            <ClockIcon className="size-4 text-muted-foreground" />
+            <div className="flex items-center gap-1.5">
+              {pendingInvitations.length > 0 && (
+                <span className="flex items-center justify-center size-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                  {pendingInvitations.length}
+                </span>
+              )}
+              <BellIcon className="size-4 text-muted-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold">{todayCount}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              réservation{todayCount > 1 ? "s" : ""}
-            </p>
+          <CardContent className="flex-1 min-h-0 p-0">
+            {pendingInvitations.length === 0 ? (
+              <p className="text-muted-foreground text-sm px-6 pb-4">
+                Aucune invitation en attente
+              </p>
+            ) : (
+              <ScrollArea className="max-h-52">
+                <div className="px-4 pb-4 space-y-3">
+                  {pendingInvitations.map((inv) => (
+                    <div key={inv.id_reservation} className="rounded-lg border p-3 space-y-2">
+                      <div className="space-y-0.5">
+                        <p className="font-medium text-sm">
+                          {inv.space?.nom ?? "Espace inconnu"}
+                        </p>
+                        {inv.reason && (
+                          <p className="text-xs text-muted-foreground italic">
+                            {inv.reason}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {new Date(inv.startTime).toLocaleDateString("fr-FR", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                          })}
+                          {" · "}
+                          {new Date(inv.startTime).toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          {" → "}
+                          {new Date(inv.endTime).toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                      <InvitationActions idReservation={inv.id_reservation} />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </CardContent>
         </Card>
       </div>
