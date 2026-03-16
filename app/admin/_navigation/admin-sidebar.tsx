@@ -14,7 +14,7 @@ import {
 import SidebarUserButton from "@/features/sidebar/sidebar-user-button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { HomeIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, LayoutDashboardIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,9 +27,9 @@ const firstSection = [
     href: "/admin",
   },
   {
-    icon: UsersIcon,
-    label: "Utilisateurs",
-    href: "/admin/users",
+    icon: LayoutDashboardIcon,
+    label: "Mon espace",
+    href: "/app",
   },
 ];
 export default function AdminSidebar() {
