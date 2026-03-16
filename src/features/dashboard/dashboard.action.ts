@@ -3,15 +3,41 @@
 import { getRequiredUser } from "@/lib/auth/auth-user";
 import prisma from "@/lib/prisma";
 
+export async function getPendingInvitations() {
+  const user = await getRequiredUser();
+
+  const participations = await prisma.reservationParticipant.findMany({
+    where: { id_user: user.id, status: "pending" },
+    select: { id_reservation: true },
+  });
+
+  if (participations.length === 0) return [];
+
+  const reservationIds = participations.map((p) => p.id_reservation);
+
+  const reservations = await prisma.reservation.findMany({
+    where: { id_reservation: { in: reservationIds }, status: { not: "canceled" } },
+    select: { id_reservation: true, startTime: true, endTime: true, reason: true, id_space: true },
+  });
+
+  const spaceIds = [...new Set(reservations.map((r) => r.id_space))];
+  const spaces = await prisma.space.findMany({
+    where: { id_espace: { in: spaceIds } },
+    select: { id_espace: true, nom: true },
+  });
+  const spaceMap = new Map(spaces.map((s) => [s.id_espace, s]));
+
+  return reservations.map((r) => ({
+    ...r,
+    space: spaceMap.get(r.id_space) ?? null,
+  }));
+}
+
 export async function getDashboardData() {
   const user = await getRequiredUser();
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(now);
-  todayEnd.setHours(23, 59, 59, 999);
 
-  const [upcomingReservations, todayCount] = await Promise.all([
+  const [upcomingReservations] = await Promise.all([
     prisma.reservation.findMany({
       where: {
         id_user: user.id,
@@ -20,14 +46,6 @@ export async function getDashboardData() {
       },
       orderBy: { startTime: "asc" },
       take: 5,
-    }),
-    prisma.reservation.count({
-      where: {
-        id_user: user.id,
-        status: { not: "canceled" },
-        startTime: { gte: todayStart },
-        endTime: { lte: todayEnd },
-      },
     }),
   ]);
 
@@ -88,7 +106,6 @@ export async function getDashboardData() {
   return {
     upcomingReservations: reservationsWithSpace,
     nextReservation: reservationsWithSpace[0] ?? null,
-    todayCount,
     allSpaces,
   };
 }

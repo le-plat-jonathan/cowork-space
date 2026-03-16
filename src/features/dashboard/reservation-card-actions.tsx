@@ -10,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -27,17 +30,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { inviteUserToReservation, searchUser } from "@/features/invite/invite";
 import {
   canceledReservation,
   updateReservation,
 } from "@/features/reservations/reservations";
 import { useMutation } from "@tanstack/react-query";
-import { PencilIcon, XIcon } from "lucide-react";
+import { PencilIcon, X, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 type Space = { id_espace: string; nom: string; type: string };
+
+type Participant = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  image: string | null;
+  status: string;
+};
 
 type Reservation = {
   id_reservation: string;
@@ -46,6 +60,23 @@ type Reservation = {
   reason: string | null;
   is_private: boolean;
   id_space: string;
+  space: { id_espace: string; nom: string; type: string } | null;
+  participants: Participant[];
+};
+
+const INVITATION_STATUS_LABEL: Record<string, string> = {
+  pending: "En attente",
+  accepted: "Acceptée",
+  declined: "Déclinée",
+};
+
+const INVITATION_STATUS_VARIANT: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  pending: "secondary",
+  accepted: "default",
+  declined: "destructive",
 };
 
 function toDateInput(d: Date) {
@@ -55,6 +86,8 @@ function toDateInput(d: Date) {
 function toTimeInput(d: Date) {
   return new Date(d).toTimeString().slice(0, 5);
 }
+
+type UserSearchResult = { id: string; name: string; email: string; image: string | null };
 
 export function ReservationCardActions({
   reservation,
@@ -71,6 +104,49 @@ export function ReservationCardActions({
   const [endTime, setEndTime] = useState(toTimeInput(reservation.endTime));
   const [reason, setReason] = useState(reservation.reason ?? "");
   const [spaceId, setSpaceId] = useState(reservation.id_space);
+
+  // Invitations
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [newParticipants, setNewParticipants] = useState<UserSearchResult[]>([]);
+
+  const selectedSpaceType = allSpaces.find((s) => s.id_espace === spaceId)?.type;
+  const isMeetingRoom = selectedSpaceType === "meeting_room";
+
+  const existingParticipantIds = new Set(reservation.participants.map((p) => p.id));
+
+  const handleSearch = async (q: string) => {
+    setSearchQuery(q);
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const results = await searchUser(q);
+    setSearchResults(
+      results.filter(
+        (u) =>
+          !existingParticipantIds.has(u.id) &&
+          !newParticipants.find((p) => p.id === u.id)
+      )
+    );
+  };
+
+  const addNewParticipant = (user: UserSearchResult) => {
+    setNewParticipants((prev) => [...prev, user]);
+    setSearchResults([]);
+    setSearchQuery("");
+  };
+
+  const removeNewParticipant = (id: string) => {
+    setNewParticipants((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleClose = () => {
+    setEditOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setNewParticipants([]);
+  };
 
   const cancelMutation = useMutation({
     mutationFn: () => canceledReservation(reservation.id_reservation),
@@ -90,7 +166,8 @@ export function ReservationCardActions({
       const newStart = new Date(`${date}T${startTime}`);
       const newEnd = new Date(`${date}T${endTime}`);
       if (newEnd <= newStart) throw new Error("L'heure de fin doit être après le début");
-      return updateReservation(
+
+      const ok = await updateReservation(
         reservation.id_reservation,
         newStart,
         newEnd,
@@ -99,27 +176,30 @@ export function ReservationCardActions({
         undefined,
         reason || undefined,
       );
+      if (!ok) return false;
+
+      // Inviter les nouveaux participants
+      for (const p of newParticipants) {
+        await inviteUserToReservation(reservation.id_reservation, p.id);
+      }
+      return true;
     },
     onSuccess: (ok) => {
       if (ok) {
         toast.success("Réservation modifiée");
-        setEditOpen(false);
+        handleClose();
         router.refresh();
       } else {
         toast.error("Créneau non disponible pour cet espace");
       }
     },
-    onError: (e) => toast.error(e.message ?? "Erreur lors de la modification"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erreur lors de la modification"),
   });
 
   return (
     <>
       <div className="flex gap-1.5 shrink-0">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setEditOpen(true)}
-        >
+        <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
           <PencilIcon className="size-3.5" />
         </Button>
         <Button
@@ -132,6 +212,7 @@ export function ReservationCardActions({
         </Button>
       </div>
 
+      {/* Dialog annulation */}
       <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -152,11 +233,13 @@ export function ReservationCardActions({
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
+      {/* Dialog modification */}
+      <Dialog open={editOpen} onOpenChange={(v) => !v && handleClose()}>
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>Modifier la réservation</DialogTitle>
           </DialogHeader>
+
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Espace</Label>
@@ -173,6 +256,7 @@ export function ReservationCardActions({
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-1.5">
               <Label>Date</Label>
               <Input
@@ -181,6 +265,7 @@ export function ReservationCardActions({
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Début</Label>
@@ -199,6 +284,7 @@ export function ReservationCardActions({
                 />
               </div>
             </div>
+
             <div className="space-y-1.5">
               <Label>Motif</Label>
               <Input
@@ -207,9 +293,100 @@ export function ReservationCardActions({
                 placeholder="Optionnel"
               />
             </div>
+
+            {/* Section participants — seulement pour les salles de réunion */}
+            {isMeetingRoom && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <Label>Participants</Label>
+
+                  {/* Participants existants */}
+                  {reservation.participants.length > 0 && (
+                    <div className="space-y-1.5">
+                      {reservation.participants.map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-center justify-between rounded-md border px-3 py-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Avatar className="size-6">
+                              <AvatarImage src={p.image ?? undefined} />
+                              <AvatarFallback className="text-xs">{p.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{p.name}</span>
+                          </div>
+                          <Badge
+                            variant={INVITATION_STATUS_VARIANT[p.status] ?? "secondary"}
+                            className="text-xs"
+                          >
+                            {INVITATION_STATUS_LABEL[p.status] ?? p.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Nouveaux participants à ajouter */}
+                  {newParticipants.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {newParticipants.map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-center gap-1 bg-secondary rounded-full pl-1 pr-2 py-0.5"
+                        >
+                          <Avatar className="size-5">
+                            <AvatarImage src={p.image ?? undefined} />
+                            <AvatarFallback className="text-xs">{p.name[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs">{p.name}</span>
+                          <button
+                            onClick={() => removeNewParticipant(p.id)}
+                            className="ml-0.5 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Recherche */}
+                  <Input
+                    placeholder="Inviter un membre…"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                  />
+
+                  {searchResults.length > 0 && (
+                    <ScrollArea className="max-h-36 rounded-md border">
+                      <div className="p-1">
+                        {searchResults.map((u) => (
+                          <button
+                            key={u.id}
+                            className="flex items-center gap-2 w-full rounded-sm px-2 py-1.5 text-sm hover:bg-accent text-left"
+                            onClick={() => addNewParticipant(u)}
+                          >
+                            <Avatar className="size-6">
+                              <AvatarImage src={u.image ?? undefined} />
+                              <AvatarFallback>{u.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{u.name}</p>
+                              <p className="text-xs text-muted-foreground">{u.email}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </div>
+              </>
+            )}
           </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>
+            <Button variant="outline" onClick={handleClose} disabled={updateMutation.isPending}>
               Annuler
             </Button>
             <Button
