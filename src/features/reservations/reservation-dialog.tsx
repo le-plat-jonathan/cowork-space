@@ -38,9 +38,15 @@ type Props = {
   onClose: () => void
 }
 
+function getDefaultTimes() {
+  const today = new Date().toISOString().split("T")[0]
+  return { start: `${today}T09:00`, end: `${today}T10:00` }
+}
+
 export function ReservationDialog({ space, open, onClose }: Props) {
-  const [startTime, setStartTime] = useState("")
-  const [endTime, setEndTime] = useState("")
+  const defaults = getDefaultTimes()
+  const [startTime, setStartTime] = useState(defaults.start)
+  const [endTime, setEndTime] = useState(defaults.end)
   const [reason, setReason] = useState("")
   const [isPrivate, setIsPrivate] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -99,8 +105,9 @@ export function ReservationDialog({ space, open, onClose }: Props) {
   }
 
   const handleClose = () => {
-    setStartTime("")
-    setEndTime("")
+    const d = getDefaultTimes()
+    setStartTime(d.start)
+    setEndTime(d.end)
     setReason("")
     setIsPrivate(false)
     setParticipants([])
